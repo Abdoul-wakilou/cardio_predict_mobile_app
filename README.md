@@ -111,14 +111,6 @@ flutter pub get
 flutter run
 ```
 
-### Configuration API selon la plateforme
-
-| Plateforme | URL API |
-|------------|---------|
-| Émulateur Android | `http://10.0.2.2:5000` |
-| iOS Simulator | `http://localhost:5000` |
-| Device physique | `http://<IP_MACHINE>:5000` |
-
 ---
 
 ## 🔗 Communication avec le backend IA
@@ -224,25 +216,6 @@ dependencies:
 
 ---
 
-## 🧪 Tests
-
-### Tests unitaires
-```bash
-flutter test
-```
-
-### Tests d'intégration
-```bash
-flutter test integration_test
-```
-
-### Tests manuels recommandés
-1. Test du formulaire avec données valides/invalides
-2. Test de connexion API (serveur allumé/éteint)
-3. Test génération PDF (sur émulateur Android)
-4. Test navigation entre écrans
-
----
 
 ## 🚀 Build pour production
 
@@ -263,17 +236,6 @@ flutter build ios --release
 
 ---
 
-## 🔧 Dépannage
-
-### Problème : "Connection refused"
-```bash
-# Vérifier que Flask tourne
-curl http://localhost:5000/health
-
-# Vérifier l'URL dans api_service.dart
-# Pour émulateur Android : 10.0.2.2:5000
-# Pour iOS Simulator : localhost:5000
-```
 
 ### Problème : "PDF not generated"
 - Sur web : La génération PDF n'est pas supportée
@@ -297,39 +259,16 @@ flutter pub get
 
 ---
 
-## 📚 Documentation Flutter
-
-- [Documentation officielle Flutter](https://flutter.dev/docs)
-- [Cookbook Flutter](https://flutter.dev/docs/cookbook)
-- [API reference](https://api.flutter.dev/)
-- [Material Design 3](https://m3.material.io/)
-
----
-
-## ⚠️ Avertissements
-
-### Plateforme web
-- La génération PDF n'est **pas disponible** sur web
-- L'application est optimisée pour **mobile**
-- Utiliser Chrome DevTools pour le debug
-
-### Données médicales
-- Cette application est un **outil d'aide à la décision**
-- Ne remplace **pas** une consultation médicale
-- Les résultats ont une **précision de 82%**
-
----
-
 ## 👨‍💻 Auteur
 
 **Abdoul-wakilou Tiga**  
-Étudiant en Master 2 Intelligence Artificielle & Data Science  
-Université [Nom de l'université]  
-Année académique 2023-2024
+Étudiant en Master 2 Génie Logiciel 
+Université Université d'Abomey-Calavi
+Année académique 2024-2025
 
 ### Contact
-- 📧 Email : [votre-email@etudiant.univ-xxx.fr]
-- 🔗 LinkedIn : [votre-profil-linkedin]
+- 📧 Email : [abdoulwakiloutiga@gmail.com](abdoulwakiloutiga@gmail.com)
+- 🔗 LinkedIn : [Abdoul-wakilou-Tiga](https://linkedin.com/in/abdoul-wakilou-tiga)
 - 🐙 GitHub : [Abdoul-wakilou-Tiga](https://github.com/Abdoul-wakilou-Tiga)
 
 ---
