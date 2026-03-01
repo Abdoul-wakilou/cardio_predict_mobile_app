@@ -13,7 +13,7 @@ class PatientData {
   final double? oldpeak;
   final int? slope;
   final int? thal;
-  final int? ca; // Ajoutez ce champ manquant
+  final int? ca;
 
   PatientData({
     this.age,
@@ -28,7 +28,7 @@ class PatientData {
     this.oldpeak,
     this.slope,
     this.thal,
-    this.ca, // Ajoutez ici
+    this.ca,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,7 +44,7 @@ class PatientData {
       'exang': exang ?? 0,
       'oldpeak': oldpeak ?? 0.0,
       'slope': slope ?? 0,
-      'ca': ca ?? 0, // Important: ne pas oublier
+      'ca': ca ?? 0,
       'thal': thal ?? 0,
     };
   }
