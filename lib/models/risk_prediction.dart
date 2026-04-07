@@ -1,3 +1,4 @@
+// lib/models/risk_prediction.dart
 import 'package:flutter/material.dart';
 
 class RiskPrediction {
