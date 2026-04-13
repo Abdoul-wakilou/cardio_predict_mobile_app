@@ -58,8 +58,35 @@ class _FormulairePageState extends State<FormulairePage> {
     ),
   ];
 
+  /// Vérifie si les 13 variables obligatoires sont remplies
+  bool _isFormComplete() {
+    // Vérifier les champs numériques
+    if (_ageController.text.isEmpty ||
+        _trestbpsController.text.isEmpty ||
+        _cholController.text.isEmpty ||
+        _thalachController.text.isEmpty ||
+        _oldpeakController.text.isEmpty) {
+      return false;
+    }
+    
+    // Vérifier les champs catégoriels
+    if (_selectedSex == null ||
+        _selectedCp == null ||
+        _selectedFbs == null ||
+        _selectedRestecg == null ||
+        _selectedExang == null ||
+        _selectedSlope == null ||
+        _selectedCa == null ||
+        _selectedThal == null) {
+      return false;
+    }
+    
+    return true;
+  }
+
   Future<void> _analyserRisque() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_isFormComplete()) return;
 
     setState(() {
       _isLoading = true;
@@ -161,10 +188,7 @@ class _FormulairePageState extends State<FormulairePage> {
           ? _buildLoadingAnimation()
           : Column(
               children: [
-                // Barre de progression
                 _buildProgressBar(),
-
-                // Étapes du formulaire
                 Expanded(
                   child: SingleChildScrollView(
                     physics: BouncingScrollPhysics(),
@@ -174,19 +198,14 @@ class _FormulairePageState extends State<FormulairePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // En-tête de l'étape
                           _buildStepHeader(),
                           SizedBox(height: 24),
-
-                          // Contenu de l'étape
                           _buildStepContent(),
                         ],
                       ),
                     ),
                   ),
                 ),
-
-                // Boutons de navigation en bas de page
                 if (_formSteps.length > 1) _buildNavigationButtons(),
               ],
             ),
@@ -204,7 +223,6 @@ class _FormulairePageState extends State<FormulairePage> {
       ),
       child: Column(
         children: [
-          // Étapes
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: _formSteps.asMap().entries.map((entry) {
@@ -326,7 +344,7 @@ class _FormulairePageState extends State<FormulairePage> {
                     Text(
                       currentStep.title,
                       style: TextStyle(
-                        fontSize: 20, // Taille réduite
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1B5E20),
                       ),
@@ -382,10 +400,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Sexe biologique',
             value: _selectedSex,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Femme', description: 'Sexe féminin'),
-              DropdownItem(
-                  value: 1, label: 'Homme', description: 'Sexe masculin'),
+              DropdownItem(value: 0, label: 'Femme', description: 'Sexe féminin'),
+              DropdownItem(value: 1, label: 'Homme', description: 'Sexe masculin'),
             ],
             onChanged: (value) => setState(() => _selectedSex = value),
           ),
@@ -446,10 +462,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Glycémie à jeun > 120 mg/dL',
             value: _selectedFbs,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Non', description: 'Glycémie normale'),
-              DropdownItem(
-                  value: 1, label: 'Oui', description: 'Glycémie élevée'),
+              DropdownItem(value: 0, label: 'Non', description: 'Glycémie normale'),
+              DropdownItem(value: 1, label: 'Oui', description: 'Glycémie élevée'),
             ],
             onChanged: (value) => setState(() => _selectedFbs = value),
           ),
@@ -468,22 +482,10 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Type de douleur thoracique',
             value: _selectedCp,
             items: [
-              DropdownItem(
-                  value: 0,
-                  label: 'Angine typique',
-                  description: 'Douleur caractéristique'),
-              DropdownItem(
-                  value: 1,
-                  label: 'Angine atypique',
-                  description: 'Douleur non caractéristique'),
-              DropdownItem(
-                  value: 2,
-                  label: 'Douleur non angineuse',
-                  description: 'Douleur non liée au cœur'),
-              DropdownItem(
-                  value: 3,
-                  label: 'Asymptomatique',
-                  description: 'Aucune douleur'),
+              DropdownItem(value: 0, label: 'Angine typique', description: 'Douleur caractéristique'),
+              DropdownItem(value: 1, label: 'Angine atypique', description: 'Douleur non caractéristique'),
+              DropdownItem(value: 2, label: 'Douleur non angineuse', description: 'Douleur non liée au cœur'),
+              DropdownItem(value: 3, label: 'Asymptomatique', description: 'Aucune douleur'),
             ],
             onChanged: (value) => setState(() => _selectedCp = value),
           ),
@@ -496,16 +498,9 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Résultats ECG au repos',
             value: _selectedRestecg,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Normal', description: 'ECG normal'),
-              DropdownItem(
-                  value: 1,
-                  label: 'Anomalie onde ST-T',
-                  description: 'Anomalie détectée'),
-              DropdownItem(
-                  value: 2,
-                  label: 'Hypertrophie ventriculaire',
-                  description: 'HVG probable'),
+              DropdownItem(value: 0, label: 'Normal', description: 'ECG normal'),
+              DropdownItem(value: 1, label: 'Anomalie onde ST-T', description: 'Anomalie détectée'),
+              DropdownItem(value: 2, label: 'Hypertrophie ventriculaire', description: 'HVG probable'),
             ],
             onChanged: (value) => setState(() => _selectedRestecg = value),
           ),
@@ -518,14 +513,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Angine induite par l\'effort',
             value: _selectedExang,
             items: [
-              DropdownItem(
-                  value: 0,
-                  label: 'Non',
-                  description: 'Aucune douleur à l\'effort'),
-              DropdownItem(
-                  value: 1,
-                  label: 'Oui',
-                  description: 'Douleur présente à l\'effort'),
+              DropdownItem(value: 0, label: 'Non', description: 'Aucune douleur à l\'effort'),
+              DropdownItem(value: 1, label: 'Oui', description: 'Douleur présente à l\'effort'),
             ],
             onChanged: (value) => setState(() => _selectedExang = value),
           ),
@@ -551,14 +540,9 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Pente du segment ST à l\'effort',
             value: _selectedSlope,
             items: [
-              DropdownItem(
-                  value: 0,
-                  label: 'Descendante',
-                  description: 'Pente négative'),
-              DropdownItem(
-                  value: 1, label: 'Plate', description: 'Pente nulle'),
-              DropdownItem(
-                  value: 2, label: 'Montante', description: 'Pente positive'),
+              DropdownItem(value: 0, label: 'Descendante', description: 'Pente négative'),
+              DropdownItem(value: 1, label: 'Plate', description: 'Pente nulle'),
+              DropdownItem(value: 2, label: 'Montante', description: 'Pente positive'),
             ],
             onChanged: (value) => setState(() => _selectedSlope = value),
           ),
@@ -571,40 +555,30 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Résultat test thalassémie',
             value: _selectedThal,
             items: [
-              DropdownItem(
-                  value: 0,
-                  label: 'Inconnu/Manquant',
-                  description: 'Donnée non disponible'),
-              DropdownItem(
-                  value: 1, label: 'Normal', description: 'Test normal'),
-              DropdownItem(
-                  value: 2,
-                  label: 'Défaut fixe',
-                  description: 'Anomalie fixe détectée'),
-              DropdownItem(
-                  value: 3,
-                  label: 'Défaut réversible',
-                  description: 'Anomalie réversible'),
+              DropdownItem(value: 0, label: 'Inconnu/Manquant', description: 'Donnée non disponible'),
+              DropdownItem(value: 1, label: 'Normal', description: 'Test normal'),
+              DropdownItem(value: 2, label: 'Défaut fixe', description: 'Anomalie fixe détectée'),
+              DropdownItem(value: 3, label: 'Défaut réversible', description: 'Anomalie réversible'),
             ],
             onChanged: (value) => setState(() => _selectedThal = value),
           ),
         ),
         SizedBox(height: 20),
         SlideInWidget(
-  delay: 550,
-  child: _buildDropdownField(
-    icon: Icons.numbers_rounded,
-    label: 'Nombre de vaisseaux colorés',
-    value: _selectedCa,
-    items: [
-      DropdownItem(value: 0, label: '0', description: 'Aucun vaisseau'),
-      DropdownItem(value: 1, label: '1', description: 'Un vaisseau'),
-      DropdownItem(value: 2, label: '2', description: 'Deux vaisseaux'),
-      DropdownItem(value: 3, label: '3', description: 'Trois vaisseaux'),
-    ],
-    onChanged: (value) => setState(() => _selectedCa = value),
-  ),
-),
+          delay: 550,
+          child: _buildDropdownField(
+            icon: Icons.numbers_rounded,
+            label: 'Nombre de vaisseaux colorés',
+            value: _selectedCa,
+            items: [
+              DropdownItem(value: 0, label: '0', description: 'Aucun vaisseau'),
+              DropdownItem(value: 1, label: '1', description: 'Un vaisseau'),
+              DropdownItem(value: 2, label: '2', description: 'Deux vaisseaux'),
+              DropdownItem(value: 3, label: '3', description: 'Trois vaisseaux'),
+            ],
+            onChanged: (value) => setState(() => _selectedCa = value),
+          ),
+        ),
       ],
     );
   }
@@ -622,10 +596,10 @@ class _FormulairePageState extends State<FormulairePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!), // Bordure plus subtile
+        border: Border.all(color: Colors.grey[100]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03), // Ombre plus subtile
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 6,
             offset: Offset(0, 1),
           ),
@@ -675,8 +649,7 @@ class _FormulairePageState extends State<FormulairePage> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[50],
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -720,7 +693,7 @@ class _FormulairePageState extends State<FormulairePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!), // Bordure plus subtile
+        border: Border.all(color: Colors.grey[100]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -769,8 +742,7 @@ class _FormulairePageState extends State<FormulairePage> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[50],
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               items: items.map((item) {
                 return DropdownMenuItem<int>(
@@ -815,81 +787,84 @@ class _FormulairePageState extends State<FormulairePage> {
     );
   }
 
-Widget _buildNavigationButtons() {
-  return Container(
-    padding: EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border(
-        top: BorderSide(color: Colors.grey[100]!),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          offset: Offset(0, -2),
+
+  Widget _buildNavigationButtons() {
+    final bool isLastStep = _currentStep == _formSteps.length - 1;
+    final bool canAnalyze = isLastStep && _isFormComplete();
+    
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Colors.grey[100]!),
         ),
-      ],
-    ),
-    child: SlideInWidget(
-      delay: 300,
-      child: Row(
-        children: [
-          if (_currentStep > 0) ...[
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _previousStep,
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  side: BorderSide(color: Color(0xFF2E7D32)),
-                ),
-                child: Text(
-                  'Précédent',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 16),
-          ],
-          Expanded(
-            flex: _currentStep > 0 ? 1 : 2,
-            child: ElevatedButton(
-              onPressed: _currentStep < _formSteps.length - 1
-                  ? _nextStep
-                  : _analyserRisque,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                shadowColor: Color(0xFF2E7D32).withOpacity(0.3),
-              ),
-              child: Text(
-                _currentStep < _formSteps.length - 1
-                    ? 'Continuer'
-                    : 'Analyser le risque',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, -2),
           ),
         ],
       ),
-    ),
-  );
-}
+      child: SlideInWidget(
+        delay: 300,
+        child: Row(
+          children: [
+            if (_currentStep > 0) ...[
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _previousStep,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    side: BorderSide(color: Color(0xFF2E7D32)),
+                  ),
+                  child: Text(
+                    'Précédent',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16),
+            ],
+            Expanded(
+              flex: _currentStep > 0 ? 1 : 2,
+              child: ElevatedButton(
+                onPressed: (!isLastStep)
+                    ? _nextStep
+                    : (canAnalyze ? _analyserRisque : null),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 4,
+                  disabledBackgroundColor: Colors.grey[300],
+                ),
+                child: Text(
+                  !isLastStep ? 'Continuer' : 'Analyser le risque',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoadingAnimation() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -980,7 +955,6 @@ class FormStep {
   final String title;
   final IconData icon;
   final String description;
-
   FormStep({
     required this.title,
     required this.icon,
@@ -992,7 +966,6 @@ class DropdownItem {
   final int value;
   final String label;
   final String? description;
-
   DropdownItem({
     required this.value,
     required this.label,
@@ -1000,13 +973,10 @@ class DropdownItem {
   });
 }
 
-// Animation de slide depuis le bas
 class SlideInWidget extends StatefulWidget {
   final Widget child;
   final int delay;
-
   const SlideInWidget({super.key, required this.child, this.delay = 0});
-
   @override
   _SlideInWidgetState createState() => _SlideInWidgetState();
 }
@@ -1015,16 +985,13 @@ class _SlideInWidgetState extends State<SlideInWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _animation;
-
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 500),
     );
-
     _animation = Tween<Offset>(
       begin: Offset(0, 0.2),
       end: Offset.zero,
@@ -1032,20 +999,17 @@ class _SlideInWidgetState extends State<SlideInWidget>
       parent: _controller,
       curve: Curves.easeOut,
     ));
-
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) {
         _controller.forward();
       }
     });
   }
-
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return SlideTransition(
@@ -1058,13 +1022,10 @@ class _SlideInWidgetState extends State<SlideInWidget>
   }
 }
 
-// Animation de scale (agrandissement)
 class ScaleInWidget extends StatefulWidget {
   final Widget child;
   final int delay;
-
   const ScaleInWidget({super.key, required this.child, this.delay = 0});
-
   @override
   _ScaleInWidgetState createState() => _ScaleInWidgetState();
 }
@@ -1073,16 +1034,13 @@ class _ScaleInWidgetState extends State<ScaleInWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400),
     );
-
     _animation = Tween<double>(
       begin: 0.8,
       end: 1.0,
@@ -1090,20 +1048,17 @@ class _ScaleInWidgetState extends State<ScaleInWidget>
       parent: _controller,
       curve: Curves.elasticOut,
     ));
-
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) {
         _controller.forward();
       }
     });
   }
-
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(

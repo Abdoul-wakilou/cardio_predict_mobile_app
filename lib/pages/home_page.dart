@@ -160,7 +160,7 @@ class HomePage extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'Application médicale • Résultats instantanés • Données sécurisées',
+                            'Application médicale • Résultats instantanés',
                             style: TextStyle(
                               color: Colors.grey[500],
                               fontSize: screenWidth * 0.03,
