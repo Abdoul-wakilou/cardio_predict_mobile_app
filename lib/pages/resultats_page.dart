@@ -9,7 +9,6 @@ class ResultatsPage extends StatelessWidget {
     required this.prediction,
   });
 
-  // Factory constructor pour la route (optionnel)
   factory ResultatsPage.fromPrediction(RiskPrediction? prediction) {
     return ResultatsPage(
       prediction: prediction ?? RiskPrediction.defaultPrediction(),
@@ -39,14 +38,14 @@ class ResultatsPage extends StatelessWidget {
         child: Column(
           children: [
             _buildResultHeader(),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             _buildRiskIndicator(),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
             if (prediction.probabilityDisease != null)
               _buildProbabilitySection(),
-            const SizedBox(height: 20),
-            _buildConseilsSection(),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
+            _buildConseilsSection(context),
+            const SizedBox(height: 32),
             _buildActionButtons(context),
           ],
         ),
@@ -55,6 +54,11 @@ class ResultatsPage extends StatelessWidget {
   }
 
   Widget _buildResultHeader() {
+    // Déterminer le libellé du badge
+    final isMalade = prediction.riskCategory == 'Malade';
+    final badgeText = isMalade ? 'MALADE' : 'SAIN';
+    final badgeColor = isMalade ? Colors.red : Colors.green;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -68,73 +72,59 @@ class ResultatsPage extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: prediction.color.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: prediction.color.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: prediction.color.withOpacity(0.2), width: 1),
       ),
       child: Column(
         children: [
+          // Icône
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: prediction.color.withOpacity(0.1),
               shape: BoxShape.circle,
               border: Border.all(
-                color: prediction.color.withOpacity(0.3),
-                width: 2,
-              ),
+                  color: prediction.color.withOpacity(0.3), width: 2),
             ),
-            child: Icon(
-              _getRiskIcon(prediction.niveauRisque),
-              size: 48,
-              color: prediction.color,
-            ),
+            child: Icon(_getRiskIcon(prediction.niveauRisque),
+                size: 48, color: prediction.color),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          // Niveau de risque
           Text(
             prediction.niveauText.toUpperCase(),
             style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: prediction.color,
-              letterSpacing: 1.2,
-            ),
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: prediction.color),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          // Description
           Text(
             prediction.description,
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.6,
-              color: Colors.grey[700],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
+          // Badge Sain/Malade
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: prediction.color.withOpacity(0.1),
+              color: badgeColor.withOpacity(0.15),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: badgeColor.withOpacity(0.5), width: 1),
             ),
             child: Text(
-              prediction.riskCategory ?? 'Non déterminé',
+              badgeText,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: prediction.color,
+                fontWeight: FontWeight.w700,
+                color: badgeColor,
+                letterSpacing: 1,
               ),
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -144,35 +134,24 @@ class ResultatsPage extends StatelessWidget {
     final probabilityPercent = prediction.probabilityDisease != null
         ? '${(prediction.probabilityDisease! * 100).toStringAsFixed(1)}%'
         : 'N/A';
-        
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Probabilité de maladie:',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),
-              Text(
-                probabilityPercent,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: prediction.color,
-                ),
-              ),
+              const Text('Probabilité de maladie:',
+                  style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(probabilityPercent,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: prediction.color)),
             ],
           ),
           const SizedBox(height: 8),
@@ -194,59 +173,34 @@ class ResultatsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[100]!),
       ),
       child: Column(
         children: [
-          const Text(
-            'NIVEAU DE RISQUE',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 16),
+          const Text('NIVEAU DE RISQUE',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey)),
+          const SizedBox(height: 12),
           Container(
-            height: 12,
+            height: 10,
             decoration: BoxDecoration(
               color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(5),
             ),
-            child: Stack(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 1000),
-                  curve: Curves.easeOut,
-                  width: _getRiskPercentage(),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        prediction.color.withOpacity(0.8),
-                        prediction.color,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: prediction.color.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 1000),
+              width: _getRiskPercentage(),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  prediction.color.withOpacity(0.8),
+                  prediction.color
+                ]),
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -278,7 +232,7 @@ class ResultatsPage extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             color: isActive ? _getRiskColor(level) : Colors.grey[500],
           ),
@@ -287,111 +241,127 @@ class ResultatsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildConseilsSection() {
+  Widget _buildConseilsSection(BuildContext context) {
     if (prediction.conseils.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(20),
-        ),
+            color: Colors.grey[50], borderRadius: BorderRadius.circular(16)),
         child: const Center(
-          child: Text(
-            'Aucune recommandation disponible',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ),
+            child: Text('Aucune recommandation disponible',
+                style: TextStyle(color: Colors.grey))),
       );
     }
-    
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // En-tête de la section
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D32).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.medical_services_rounded,
+                  size: 22, color: Color(0xFF2E7D32)),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Recommandations',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B5E20)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Liste des recommandations en accordéons
+        ...prediction.conseils.asMap().entries.map((entry) {
+          final index = entry.key;
+          final conseil = entry.value;
+          return _buildAccordionItem(
+            context: context,
+            number: index + 1,
+            text: conseil,
+            color: prediction.color,
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildAccordionItem({
+    required BuildContext context,
+    required int number,
+    required String text,
+    required Color color,
+  }) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[100]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2E7D32).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.medical_services_rounded,
-                    size: 22,
-                    color: Color(0xFF2E7D32),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'Recommandations Personnalisées',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1B5E20),
-                    ),
-                  ),
-                ),
-              ],
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          leading: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 20),
-            Column(
-              children: prediction.conseils.asMap().entries.map((entry) {
-                final index = entry.key;
-                final conseil = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32).withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF2E7D32),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          conseil,
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+            child: Center(
+              child: Text(
+                '$number',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+          title: Text(
+            text.length > 60 ? '${text.substring(0, 60)}...' : text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF2E7D32)),
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: Colors.grey[700],
+                ),
+              ),
             ),
           ],
         ),
@@ -405,29 +375,24 @@ class ResultatsPage extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
+            onPressed: () =>
+                Navigator.popUntil(context, (route) => route.isFirst),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
-              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.refresh_rounded, size: 20),
+                Icon(Icons.refresh_rounded, size: 20, color: Colors.white),
                 SizedBox(width: 12),
-                Text(
-                  'Nouvelle Analyse',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text('Nouvelle Analyse',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
               ],
             ),
           ),
@@ -436,14 +401,12 @@ class ResultatsPage extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
+            onPressed: () =>
+                Navigator.popUntil(context, (route) => route.isFirst),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  borderRadius: BorderRadius.circular(12)),
               side: const BorderSide(color: Color(0xFF2E7D32)),
             ),
             child: const Row(
@@ -451,14 +414,11 @@ class ResultatsPage extends StatelessWidget {
               children: [
                 Icon(Icons.home_rounded, size: 20, color: Color(0xFF2E7D32)),
                 SizedBox(width: 12),
-                Text(
-                  'Accueil',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32),
-                  ),
-                ),
+                Text('Accueil',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2E7D32))),
               ],
             ),
           ),
