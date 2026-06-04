@@ -61,7 +61,6 @@ class _FormulairePageState extends State<FormulairePage> {
 
   /// Vérifie si les 13 variables obligatoires sont remplies
   bool _isFormComplete() {
-    // Vérifier les champs numériques
     if (_ageController.text.isEmpty ||
         _trestbpsController.text.isEmpty ||
         _cholController.text.isEmpty ||
@@ -69,8 +68,6 @@ class _FormulairePageState extends State<FormulairePage> {
         _oldpeakController.text.isEmpty) {
       return false;
     }
-
-    // Vérifier les champs catégoriels
     if (_selectedSex == null ||
         _selectedCp == null ||
         _selectedFbs == null ||
@@ -81,7 +78,6 @@ class _FormulairePageState extends State<FormulairePage> {
         _selectedThal == null) {
       return false;
     }
-
     return true;
   }
 
@@ -93,7 +89,6 @@ class _FormulairePageState extends State<FormulairePage> {
       _isLoading = true;
     });
 
-    // Animation de progression
     for (int i = 0; i <= 100; i += 20) {
       await Future.delayed(Duration(milliseconds: 200));
       if (!mounted) return;
@@ -126,10 +121,7 @@ class _FormulairePageState extends State<FormulairePage> {
           pageBuilder: (context, animation, secondaryAnimation) =>
               ResultatsPage(prediction: prediction),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: Duration(milliseconds: 600),
         ),
@@ -153,10 +145,13 @@ class _FormulairePageState extends State<FormulairePage> {
   }
 
   void _nextStep() {
-    if (_currentStep < _formSteps.length - 1) {
-      setState(() {
-        _currentStep++;
-      });
+    // Valider l'étape courante avant de passer à la suivante
+    if (_formKey.currentState!.validate()) {
+      if (_currentStep < _formSteps.length - 1) {
+        setState(() {
+          _currentStep++;
+        });
+      }
     }
   }
 
@@ -175,10 +170,7 @@ class _FormulairePageState extends State<FormulairePage> {
       appBar: AppBar(
         title: Text(
           'Évaluation Cardiaque',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
         ),
         backgroundColor: Color(0xFF2E7D32),
         foregroundColor: Colors.white,
@@ -218,9 +210,7 @@ class _FormulairePageState extends State<FormulairePage> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FA),
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[100]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[100]!)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -233,7 +223,6 @@ class _FormulairePageState extends State<FormulairePage> {
           return Expanded(
             child: Column(
               children: [
-                // Indicateur circulaire
                 Container(
                   width: 32,
                   height: 32,
@@ -266,14 +255,15 @@ class _FormulairePageState extends State<FormulairePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Titre sous l'indicateur
                 Text(
                   _getShortStepTitle(step.title),
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color:
-                        isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
+                    fontWeight:
+                        isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive
+                        ? const Color(0xFF2E7D32)
+                        : Colors.grey[600],
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -299,7 +289,6 @@ class _FormulairePageState extends State<FormulairePage> {
 
   Widget _buildStepHeader() {
     final currentStep = _formSteps[_currentStep];
-
     return SlideInWidget(
       delay: 0,
       child: Column(
@@ -313,11 +302,7 @@ class _FormulairePageState extends State<FormulairePage> {
                   color: Color(0xFF2E7D32).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  currentStep.icon,
-                  size: 22,
-                  color: Color(0xFF2E7D32),
-                ),
+                child: Icon(currentStep.icon, size: 22, color: Color(0xFF2E7D32)),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -335,10 +320,7 @@ class _FormulairePageState extends State<FormulairePage> {
                     SizedBox(height: 2),
                     Text(
                       currentStep.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -370,12 +352,16 @@ class _FormulairePageState extends State<FormulairePage> {
       delay: 100,
       child: Column(
         children: [
+          // age : plage [1, 120] selon FEATURE_RANGES
           _buildNumberField(
             icon: Icons.cake_rounded,
             label: 'Âge du patient',
             controller: _ageController,
             unit: 'ans',
             hintText: '45',
+            helperText: 'Plage acceptée : 1 – 120 ans',
+            min: 1,
+            max: 120,
           ),
           SizedBox(height: 20),
           _buildDropdownField(
@@ -383,10 +369,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Sexe biologique',
             value: _selectedSex,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Femme', description: 'Sexe féminin'),
-              DropdownItem(
-                  value: 1, label: 'Homme', description: 'Sexe masculin'),
+              DropdownItem(value: 0, label: 'Femme', description: 'Sexe féminin'),
+              DropdownItem(value: 1, label: 'Homme', description: 'Sexe masculin'),
             ],
             onChanged: (value) => setState(() => _selectedSex = value),
           ),
@@ -400,25 +384,31 @@ class _FormulairePageState extends State<FormulairePage> {
       children: [
         SlideInWidget(
           delay: 100,
+          // trestbps : plage [50, 250] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.monitor_heart_outlined,
             label: 'Pression artérielle au repos',
             controller: _trestbpsController,
             unit: 'mmHg',
             hintText: '120',
-            helperText: 'Normale: 90-120 mmHg',
+            helperText: 'Plage acceptée : 50 – 250 mmHg  •  Normale : 90–120',
+            min: 50,
+            max: 250,
           ),
         ),
         SizedBox(height: 20),
         SlideInWidget(
           delay: 200,
+          // thalach : plage [50, 250] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.favorite_border_rounded,
             label: 'Fréquence cardiaque maximale',
             controller: _thalachController,
             unit: 'bpm',
             hintText: '150',
-            helperText: 'Normale: 60-200 bpm',
+            helperText: 'Plage acceptée : 50 – 250 bpm  •  Normale : 60–200',
+            min: 50,
+            max: 250,
           ),
         ),
       ],
@@ -430,13 +420,16 @@ class _FormulairePageState extends State<FormulairePage> {
       children: [
         SlideInWidget(
           delay: 100,
+          // chol : plage [50, 700] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.water_drop_outlined,
             label: 'Cholestérol sérique',
             controller: _cholController,
             unit: 'mg/dL',
             hintText: '200',
-            helperText: 'Normale: < 200 mg/dL',
+            helperText: 'Plage acceptée : 50 – 700 mg/dL  •  Normale : < 200',
+            min: 50,
+            max: 700,
           ),
         ),
         SizedBox(height: 20),
@@ -447,10 +440,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Glycémie à jeun > 120 mg/dL',
             value: _selectedFbs,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Non', description: 'Glycémie normale'),
-              DropdownItem(
-                  value: 1, label: 'Oui', description: 'Glycémie élevée'),
+              DropdownItem(value: 0, label: 'Non', description: 'Glycémie normale'),
+              DropdownItem(value: 1, label: 'Oui', description: 'Glycémie élevée'),
             ],
             onChanged: (value) => setState(() => _selectedFbs = value),
           ),
@@ -497,8 +488,7 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Résultats ECG au repos',
             value: _selectedRestecg,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Normal', description: 'ECG normal'),
+              DropdownItem(value: 0, label: 'Normal', description: 'ECG normal'),
               DropdownItem(
                   value: 1,
                   label: 'Anomalie onde ST-T',
@@ -534,14 +524,18 @@ class _FormulairePageState extends State<FormulairePage> {
         SizedBox(height: 20),
         SlideInWidget(
           delay: 400,
+          // oldpeak : plage [-5, 10] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.show_chart_rounded,
             label: 'Dépression du segment ST',
             controller: _oldpeakController,
-            unit: 'points',
-            hintText: '1.5',
-            helperText: 'Normale: 0-2 points',
+            unit: 'mm',
+            hintText: '1.0',
+            helperText: 'Plage acceptée : -5 – 10 mm  •  Normale : 0–2',
             isDecimal: true,
+            allowNegative: true,
+            min: -5,
+            max: 10,
           ),
         ),
         SizedBox(height: 20),
@@ -553,13 +547,12 @@ class _FormulairePageState extends State<FormulairePage> {
             value: _selectedSlope,
             items: [
               DropdownItem(
-                  value: 0,
+                  value: 0, label: 'Ascendante', description: 'Pente positive'),
+              DropdownItem(value: 1, label: 'Plate', description: 'Pente nulle'),
+              DropdownItem(
+                  value: 2,
                   label: 'Descendante',
                   description: 'Pente négative'),
-              DropdownItem(
-                  value: 1, label: 'Plate', description: 'Pente nulle'),
-              DropdownItem(
-                  value: 2, label: 'Montante', description: 'Pente positive'),
             ],
             onChanged: (value) => setState(() => _selectedSlope = value),
           ),
@@ -573,17 +566,13 @@ class _FormulairePageState extends State<FormulairePage> {
             value: _selectedThal,
             items: [
               DropdownItem(
-                  value: 0,
-                  label: 'Inconnu/Manquant',
-                  description: 'Donnée non disponible'),
+                  value: 0, label: 'Normal', description: 'Test normal'),
               DropdownItem(
-                  value: 1, label: 'Normal', description: 'Test normal'),
-              DropdownItem(
-                  value: 2,
+                  value: 1,
                   label: 'Défaut fixe',
                   description: 'Anomalie fixe détectée'),
               DropdownItem(
-                  value: 3,
+                  value: 2,
                   label: 'Défaut réversible',
                   description: 'Anomalie réversible'),
             ],
@@ -595,14 +584,13 @@ class _FormulairePageState extends State<FormulairePage> {
           delay: 550,
           child: _buildDropdownField(
             icon: Icons.numbers_rounded,
-            label: 'Nombre de vaisseaux colorés',
+            label: 'Nombre de vaisseaux colorés (fluoroscopie)',
             value: _selectedCa,
             items: [
               DropdownItem(value: 0, label: '0', description: 'Aucun vaisseau'),
               DropdownItem(value: 1, label: '1', description: 'Un vaisseau'),
               DropdownItem(value: 2, label: '2', description: 'Deux vaisseaux'),
-              DropdownItem(
-                  value: 3, label: '3', description: 'Trois vaisseaux'),
+              DropdownItem(value: 3, label: '3', description: 'Trois vaisseaux'),
             ],
             onChanged: (value) => setState(() => _selectedCa = value),
           ),
@@ -611,6 +599,10 @@ class _FormulairePageState extends State<FormulairePage> {
     );
   }
 
+  // -----------------------------------------------------------------------
+  // _buildNumberField — avec validation de plage min/max
+  // Les plages correspondent exactement à FEATURE_RANGES dans app.py
+  // -----------------------------------------------------------------------
   Widget _buildNumberField({
     required IconData icon,
     required String label,
@@ -619,6 +611,9 @@ class _FormulairePageState extends State<FormulairePage> {
     String? hintText,
     String? helperText,
     bool isDecimal = false,
+    bool allowNegative = false,
+    double? min,
+    double? max,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -658,26 +653,23 @@ class _FormulairePageState extends State<FormulairePage> {
             TextFormField(
               controller: controller,
               keyboardType: isDecimal
-                  ? TextInputType.numberWithOptions(decimal: true)
-                  : TextInputType.number,
+                  ? TextInputType.numberWithOptions(
+                      decimal: true, signed: allowNegative)
+                  : TextInputType.numberWithOptions(signed: allowNegative),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(
-                  isDecimal
-                      ? RegExp(
-                          r'^\d+\.?\d{0,2}') // Permet chiffres + point + 2 décimales
-                      : RegExp(r'^\d+'), // Permet uniquement les chiffres
+                  allowNegative
+                      ? RegExp(r'^-?\d*\.?\d{0,2}')
+                      : isDecimal
+                          ? RegExp(r'^\d*\.?\d{0,2}')
+                          : RegExp(r'^\d+'),
                 ),
               ],
               decoration: InputDecoration(
                 hintText: hintText,
-                hintStyle: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 14,
-                ),
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                 suffixText: unit,
-                suffixStyle: TextStyle(
-                  color: Colors.grey[600],
-                ),
+                suffixStyle: TextStyle(color: Colors.grey[600]),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -690,6 +682,14 @@ class _FormulairePageState extends State<FormulairePage> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Color(0xFF2E7D32)),
                 ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red[400]!),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red[600]!, width: 1.5),
+                ),
                 filled: true,
                 fillColor: Colors.grey[50],
                 contentPadding:
@@ -699,13 +699,28 @@ class _FormulairePageState extends State<FormulairePage> {
                 if (value == null || value.isEmpty) {
                   return 'Ce champ est obligatoire';
                 }
-                if (isDecimal) {
-                  final parsed = double.tryParse(value);
-                  if (parsed == null) return 'Valeur décimale invalide';
-                } else {
-                  final parsed = int.tryParse(value);
-                  if (parsed == null) return 'Valeur entière invalide';
+
+                final parsed = double.tryParse(value);
+                if (parsed == null) {
+                  return isDecimal
+                      ? 'Valeur décimale invalide'
+                      : 'Valeur entière invalide';
                 }
+
+                // Validation de la plage — correspond à FEATURE_RANGES dans app.py
+                if (min != null && parsed < min) {
+                  final minStr = min == min.truncateToDouble()
+                      ? min.toInt().toString()
+                      : min.toString();
+                  return 'Minimum : $minStr $unit';
+                }
+                if (max != null && parsed > max) {
+                  final maxStr = max == max.truncateToDouble()
+                      ? max.toInt().toString()
+                      : max.toString();
+                  return 'Maximum : $maxStr $unit';
+                }
+
                 return null;
               },
             ),
@@ -762,12 +777,14 @@ class _FormulairePageState extends State<FormulairePage> {
                   child: Icon(icon, size: 18, color: const Color(0xFF2E7D32)),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1B5E20),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1B5E20),
+                    ),
                   ),
                 ),
               ],
@@ -811,8 +828,7 @@ class _FormulairePageState extends State<FormulairePage> {
                   }).toList(),
                   onChanged: onChanged,
                   validator: (value) {
-                    if (value == null)
-                      return 'Veuillez sélectionner une option';
+                    if (value == null) return 'Veuillez sélectionner une option';
                     return null;
                   },
                 ),
@@ -832,9 +848,7 @@ class _FormulairePageState extends State<FormulairePage> {
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey[100]!),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[100]!)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -854,8 +868,7 @@ class _FormulairePageState extends State<FormulairePage> {
                   style: OutlinedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                        borderRadius: BorderRadius.circular(12)),
                     side: BorderSide(color: Color(0xFF2E7D32)),
                   ),
                   child: Text(
@@ -881,17 +894,14 @@ class _FormulairePageState extends State<FormulairePage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 4,
                   disabledBackgroundColor: Colors.grey[300],
                 ),
                 child: Text(
                   !isLastStep ? 'Continuer' : 'Analyser le risque',
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -918,11 +928,8 @@ class _FormulairePageState extends State<FormulairePage> {
                     color: Color(0xFF2E7D32).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.psychology_rounded,
-                    size: 50,
-                    color: Color(0xFF2E7D32),
-                  ),
+                  child: Icon(Icons.psychology_rounded,
+                      size: 50, color: Color(0xFF2E7D32)),
                 ),
               ),
               SizedBox(height: 32),
@@ -940,17 +947,15 @@ class _FormulairePageState extends State<FormulairePage> {
                 'Notre IA analyse vos données pour évaluer\nvotre risque cardiovasculaire',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                  height: 1.4,
-                ),
+                    fontSize: 16, color: Colors.grey[600], height: 1.4),
               ),
               SizedBox(height: 32),
               Container(
                 width: 200,
                 child: LinearProgressIndicator(
                   backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -991,22 +996,14 @@ class FormStep {
   final String title;
   final IconData icon;
   final String description;
-  FormStep({
-    required this.title,
-    required this.icon,
-    required this.description,
-  });
+  FormStep({required this.title, required this.icon, required this.description});
 }
 
 class DropdownItem {
   final int value;
   final String label;
   final String? description;
-  DropdownItem({
-    required this.value,
-    required this.label,
-    this.description,
-  });
+  DropdownItem({required this.value, required this.label, this.description});
 }
 
 class SlideInWidget extends StatefulWidget {
@@ -1021,24 +1018,16 @@ class _SlideInWidgetState extends State<SlideInWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _animation;
+
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-    _animation = Tween<Offset>(
-      begin: Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+        vsync: this, duration: Duration(milliseconds: 500));
+    _animation = Tween<Offset>(begin: Offset(0, 0.2), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
+      if (mounted) _controller.forward();
     });
   }
 
@@ -1052,10 +1041,7 @@ class _SlideInWidgetState extends State<SlideInWidget>
   Widget build(BuildContext context) {
     return SlideTransition(
       position: _animation,
-      child: FadeTransition(
-        opacity: _controller,
-        child: widget.child,
-      ),
+      child: FadeTransition(opacity: _controller, child: widget.child),
     );
   }
 }
@@ -1072,24 +1058,16 @@ class _ScaleInWidgetState extends State<ScaleInWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 400),
-    );
-    _animation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+        vsync: this, duration: Duration(milliseconds: 400));
+    _animation = Tween<double>(begin: 0.8, end: 1.0).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
+      if (mounted) _controller.forward();
     });
   }
 
@@ -1101,9 +1079,6 @@ class _ScaleInWidgetState extends State<ScaleInWidget>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
-      child: widget.child,
-    );
+    return ScaleTransition(scale: _animation, child: widget.child);
   }
 }
