@@ -1,8 +1,10 @@
+// lib/pages/formulaire_page.dart
 import 'package:flutter/material.dart';
 import '../models/patient_data.dart';
 import '../models/risk_prediction.dart';
 import '../services/api_service.dart';
 import 'resultats_page.dart';
+import 'package:flutter/services.dart';
 
 class FormulairePage extends StatefulWidget {
   const FormulairePage({super.key});
@@ -57,14 +59,36 @@ class _FormulairePageState extends State<FormulairePage> {
     ),
   ];
 
+  /// Vérifie si les 13 variables obligatoires sont remplies
+  bool _isFormComplete() {
+    if (_ageController.text.isEmpty ||
+        _trestbpsController.text.isEmpty ||
+        _cholController.text.isEmpty ||
+        _thalachController.text.isEmpty ||
+        _oldpeakController.text.isEmpty) {
+      return false;
+    }
+    if (_selectedSex == null ||
+        _selectedCp == null ||
+        _selectedFbs == null ||
+        _selectedRestecg == null ||
+        _selectedExang == null ||
+        _selectedSlope == null ||
+        _selectedCa == null ||
+        _selectedThal == null) {
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _analyserRisque() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_isFormComplete()) return;
 
     setState(() {
       _isLoading = true;
     });
 
-    // Animation de progression
     for (int i = 0; i <= 100; i += 20) {
       await Future.delayed(Duration(milliseconds: 200));
       if (!mounted) return;
@@ -97,10 +121,7 @@ class _FormulairePageState extends State<FormulairePage> {
           pageBuilder: (context, animation, secondaryAnimation) =>
               ResultatsPage(prediction: prediction),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: Duration(milliseconds: 600),
         ),
@@ -124,10 +145,13 @@ class _FormulairePageState extends State<FormulairePage> {
   }
 
   void _nextStep() {
-    if (_currentStep < _formSteps.length - 1) {
-      setState(() {
-        _currentStep++;
-      });
+    // Valider l'étape courante avant de passer à la suivante
+    if (_formKey.currentState!.validate()) {
+      if (_currentStep < _formSteps.length - 1) {
+        setState(() {
+          _currentStep++;
+        });
+      }
     }
   }
 
@@ -146,10 +170,7 @@ class _FormulairePageState extends State<FormulairePage> {
       appBar: AppBar(
         title: Text(
           'Évaluation Cardiaque',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
         ),
         backgroundColor: Color(0xFF2E7D32),
         foregroundColor: Colors.white,
@@ -160,10 +181,7 @@ class _FormulairePageState extends State<FormulairePage> {
           ? _buildLoadingAnimation()
           : Column(
               children: [
-                // Barre de progression
                 _buildProgressBar(),
-
-                // Étapes du formulaire
                 Expanded(
                   child: SingleChildScrollView(
                     physics: BouncingScrollPhysics(),
@@ -173,19 +191,14 @@ class _FormulairePageState extends State<FormulairePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // En-tête de l'étape
                           _buildStepHeader(),
                           SizedBox(height: 24),
-
-                          // Contenu de l'étape
                           _buildStepContent(),
                         ],
                       ),
                     ),
                   ),
                 ),
-
-                // Boutons de navigation en bas de page
                 if (_formSteps.length > 1) _buildNavigationButtons(),
               ],
             ),
@@ -194,93 +207,72 @@ class _FormulairePageState extends State<FormulairePage> {
 
   Widget _buildProgressBar() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Color(0xFFF8F9FA),
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[100]!),
-        ),
+        color: const Color(0xFFF8F9FA),
+        border: Border(bottom: BorderSide(color: Colors.grey[100]!)),
       ),
-      child: Column(
-        children: [
-          // Étapes
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _formSteps.asMap().entries.map((entry) {
-              final index = entry.key;
-              final step = entry.value;
-              final isActive = index == _currentStep;
-              final isCompleted = index < _currentStep;
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: _formSteps.asMap().entries.map((entry) {
+          final index = entry.key;
+          final step = entry.value;
+          final isActive = index == _currentStep;
+          final isCompleted = index < _currentStep;
 
-              return Expanded(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: isActive || isCompleted
-                                ? Color(0xFF2E7D32)
-                                : Colors.grey[300],
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              if (isActive || isCompleted)
-                                BoxShadow(
-                                  color: Color(0xFF2E7D32).withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                            ],
-                          ),
-                          child: Center(
-                            child: isCompleted
-                                ? Icon(Icons.check,
-                                    size: 16, color: Colors.white)
-                                : Text(
-                                    '${index + 1}',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        if (index < _formSteps.length - 1)
-                          Expanded(
-                            child: Container(
-                              height: 2,
-                              margin: EdgeInsets.symmetric(horizontal: 4),
-                              decoration: BoxDecoration(
-                                color: isCompleted
-                                    ? Color(0xFF2E7D32)
-                                    : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(1),
-                              ),
+          return Expanded(
+            child: Column(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isActive || isCompleted
+                        ? const Color(0xFF2E7D32)
+                        : Colors.grey[300],
+                    shape: BoxShape.circle,
+                    boxShadow: isActive || isCompleted
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF2E7D32).withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Center(
+                    child: isCompleted
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                        : Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
                             ),
                           ),
-                      ],
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      _getShortStepTitle(step.title),
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight:
-                            isActive ? FontWeight.w700 : FontWeight.w500,
-                        color: isActive ? Color(0xFF2E7D32) : Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
+                const SizedBox(height: 8),
+                Text(
+                  _getShortStepTitle(step.title),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight:
+                        isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive
+                        ? const Color(0xFF2E7D32)
+                        : Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -297,7 +289,6 @@ class _FormulairePageState extends State<FormulairePage> {
 
   Widget _buildStepHeader() {
     final currentStep = _formSteps[_currentStep];
-
     return SlideInWidget(
       delay: 0,
       child: Column(
@@ -311,11 +302,7 @@ class _FormulairePageState extends State<FormulairePage> {
                   color: Color(0xFF2E7D32).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  currentStep.icon,
-                  size: 22,
-                  color: Color(0xFF2E7D32),
-                ),
+                child: Icon(currentStep.icon, size: 22, color: Color(0xFF2E7D32)),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -325,7 +312,7 @@ class _FormulairePageState extends State<FormulairePage> {
                     Text(
                       currentStep.title,
                       style: TextStyle(
-                        fontSize: 20, // Taille réduite
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1B5E20),
                       ),
@@ -333,10 +320,7 @@ class _FormulairePageState extends State<FormulairePage> {
                     SizedBox(height: 2),
                     Text(
                       currentStep.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -368,12 +352,16 @@ class _FormulairePageState extends State<FormulairePage> {
       delay: 100,
       child: Column(
         children: [
+          // age : plage [1, 120] selon FEATURE_RANGES
           _buildNumberField(
             icon: Icons.cake_rounded,
             label: 'Âge du patient',
             controller: _ageController,
             unit: 'ans',
-            hintText: '45, 54, 63',
+            hintText: '45',
+            helperText: 'Plage acceptée : 1 – 120 ans',
+            min: 1,
+            max: 120,
           ),
           SizedBox(height: 20),
           _buildDropdownField(
@@ -381,10 +369,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Sexe biologique',
             value: _selectedSex,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Femme', description: 'Sexe féminin'),
-              DropdownItem(
-                  value: 1, label: 'Homme', description: 'Sexe masculin'),
+              DropdownItem(value: 0, label: 'Femme', description: 'Sexe féminin'),
+              DropdownItem(value: 1, label: 'Homme', description: 'Sexe masculin'),
             ],
             onChanged: (value) => setState(() => _selectedSex = value),
           ),
@@ -398,25 +384,31 @@ class _FormulairePageState extends State<FormulairePage> {
       children: [
         SlideInWidget(
           delay: 100,
+          // trestbps : plage [50, 250] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.monitor_heart_outlined,
             label: 'Pression artérielle au repos',
             controller: _trestbpsController,
             unit: 'mmHg',
-            hintText: '120, 140, 160',
-            helperText: 'Normale: 90-120 mmHg',
+            hintText: '120',
+            helperText: 'Plage acceptée : 50 – 250 mmHg  •  Normale : 90–120',
+            min: 50,
+            max: 250,
           ),
         ),
         SizedBox(height: 20),
         SlideInWidget(
           delay: 200,
+          // thalach : plage [50, 250] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.favorite_border_rounded,
             label: 'Fréquence cardiaque maximale',
             controller: _thalachController,
             unit: 'bpm',
-            hintText: '150, 170, 190',
-            helperText: 'Normale: 60-200 bpm',
+            hintText: '150',
+            helperText: 'Plage acceptée : 50 – 250 bpm  •  Normale : 60–200',
+            min: 50,
+            max: 250,
           ),
         ),
       ],
@@ -428,13 +420,16 @@ class _FormulairePageState extends State<FormulairePage> {
       children: [
         SlideInWidget(
           delay: 100,
+          // chol : plage [50, 700] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.water_drop_outlined,
             label: 'Cholestérol sérique',
             controller: _cholController,
             unit: 'mg/dL',
-            hintText: '200, 250, 300',
-            helperText: 'Normale: < 200 mg/dL',
+            hintText: '200',
+            helperText: 'Plage acceptée : 50 – 700 mg/dL  •  Normale : < 200',
+            min: 50,
+            max: 700,
           ),
         ),
         SizedBox(height: 20),
@@ -445,10 +440,8 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Glycémie à jeun > 120 mg/dL',
             value: _selectedFbs,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Non', description: 'Glycémie normale'),
-              DropdownItem(
-                  value: 1, label: 'Oui', description: 'Glycémie élevée'),
+              DropdownItem(value: 0, label: 'Non', description: 'Glycémie normale'),
+              DropdownItem(value: 1, label: 'Oui', description: 'Glycémie élevée'),
             ],
             onChanged: (value) => setState(() => _selectedFbs = value),
           ),
@@ -495,8 +488,7 @@ class _FormulairePageState extends State<FormulairePage> {
             label: 'Résultats ECG au repos',
             value: _selectedRestecg,
             items: [
-              DropdownItem(
-                  value: 0, label: 'Normal', description: 'ECG normal'),
+              DropdownItem(value: 0, label: 'Normal', description: 'ECG normal'),
               DropdownItem(
                   value: 1,
                   label: 'Anomalie onde ST-T',
@@ -532,14 +524,18 @@ class _FormulairePageState extends State<FormulairePage> {
         SizedBox(height: 20),
         SlideInWidget(
           delay: 400,
+          // oldpeak : plage [-5, 10] selon FEATURE_RANGES
           child: _buildNumberField(
             icon: Icons.show_chart_rounded,
             label: 'Dépression du segment ST',
             controller: _oldpeakController,
-            unit: 'points',
-            hintText: '1.5, 2.0, 3.2',
-            helperText: 'Normale: 0-2 points',
+            unit: 'mm',
+            hintText: '1.0',
+            helperText: 'Plage acceptée : -5 – 10 mm  •  Normale : 0–2',
             isDecimal: true,
+            allowNegative: true,
+            min: -5,
+            max: 10,
           ),
         ),
         SizedBox(height: 20),
@@ -551,13 +547,12 @@ class _FormulairePageState extends State<FormulairePage> {
             value: _selectedSlope,
             items: [
               DropdownItem(
-                  value: 0,
+                  value: 0, label: 'Ascendante', description: 'Pente positive'),
+              DropdownItem(value: 1, label: 'Plate', description: 'Pente nulle'),
+              DropdownItem(
+                  value: 2,
                   label: 'Descendante',
                   description: 'Pente négative'),
-              DropdownItem(
-                  value: 1, label: 'Plate', description: 'Pente nulle'),
-              DropdownItem(
-                  value: 2, label: 'Montante', description: 'Pente positive'),
             ],
             onChanged: (value) => setState(() => _selectedSlope = value),
           ),
@@ -571,17 +566,13 @@ class _FormulairePageState extends State<FormulairePage> {
             value: _selectedThal,
             items: [
               DropdownItem(
-                  value: 0,
-                  label: 'Inconnu/Manquant',
-                  description: 'Donnée non disponible'),
+                  value: 0, label: 'Normal', description: 'Test normal'),
               DropdownItem(
-                  value: 1, label: 'Normal', description: 'Test normal'),
-              DropdownItem(
-                  value: 2,
+                  value: 1,
                   label: 'Défaut fixe',
                   description: 'Anomalie fixe détectée'),
               DropdownItem(
-                  value: 3,
+                  value: 2,
                   label: 'Défaut réversible',
                   description: 'Anomalie réversible'),
             ],
@@ -590,24 +581,28 @@ class _FormulairePageState extends State<FormulairePage> {
         ),
         SizedBox(height: 20),
         SlideInWidget(
-  delay: 550,
-  child: _buildDropdownField(
-    icon: Icons.numbers_rounded,
-    label: 'Nombre de vaisseaux colorés',
-    value: _selectedCa,
-    items: [
-      DropdownItem(value: 0, label: '0', description: 'Aucun vaisseau'),
-      DropdownItem(value: 1, label: '1', description: 'Un vaisseau'),
-      DropdownItem(value: 2, label: '2', description: 'Deux vaisseaux'),
-      DropdownItem(value: 3, label: '3', description: 'Trois vaisseaux'),
-    ],
-    onChanged: (value) => setState(() => _selectedCa = value),
-  ),
-),
+          delay: 550,
+          child: _buildDropdownField(
+            icon: Icons.numbers_rounded,
+            label: 'Nombre de vaisseaux colorés (fluoroscopie)',
+            value: _selectedCa,
+            items: [
+              DropdownItem(value: 0, label: '0', description: 'Aucun vaisseau'),
+              DropdownItem(value: 1, label: '1', description: 'Un vaisseau'),
+              DropdownItem(value: 2, label: '2', description: 'Deux vaisseaux'),
+              DropdownItem(value: 3, label: '3', description: 'Trois vaisseaux'),
+            ],
+            onChanged: (value) => setState(() => _selectedCa = value),
+          ),
+        ),
       ],
     );
   }
 
+  // -----------------------------------------------------------------------
+  // _buildNumberField — avec validation de plage min/max
+  // Les plages correspondent exactement à FEATURE_RANGES dans app.py
+  // -----------------------------------------------------------------------
   Widget _buildNumberField({
     required IconData icon,
     required String label,
@@ -616,110 +611,15 @@ class _FormulairePageState extends State<FormulairePage> {
     String? hintText,
     String? helperText,
     bool isDecimal = false,
+    bool allowNegative = false,
+    double? min,
+    double? max,
   }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!), // Bordure plus subtile
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03), // Ombre plus subtile
-            blurRadius: 6,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 18, color: Color(0xFF2E7D32)),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1B5E20),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              controller: controller,
-              keyboardType: isDecimal
-                  ? TextInputType.numberWithOptions(decimal: true)
-                  : TextInputType.number,
-              decoration: InputDecoration(
-                hintText: hintText,
-                suffixText: unit,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF2E7D32)),
-                ),
-                filled: true,
-                fillColor: Colors.grey[50],
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Ce champ est obligatoire';
-                }
-                if (isDecimal) {
-                  final parsed = double.tryParse(value);
-                  if (parsed == null) return 'Valeur décimale invalide';
-                } else {
-                  final parsed = int.tryParse(value);
-                  if (parsed == null) return 'Valeur entière invalide';
-                }
-                return null;
-              },
-            ),
-            if (helperText != null) ...[
-              SizedBox(height: 6),
-              Text(
-                helperText,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[500],
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdownField({
-    required IconData icon,
-    required String label,
-    required int? value,
-    required List<DropdownItem> items,
-    required Function(int?) onChanged,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!), // Bordure plus subtile
+        border: Border.all(color: Colors.grey[100]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -750,10 +650,26 @@ class _FormulairePageState extends State<FormulairePage> {
               ],
             ),
             SizedBox(height: 10),
-            DropdownButtonFormField<int>(
-              value: value,
-              isExpanded: true,
+            TextFormField(
+              controller: controller,
+              keyboardType: isDecimal
+                  ? TextInputType.numberWithOptions(
+                      decimal: true, signed: allowNegative)
+                  : TextInputType.numberWithOptions(signed: allowNegative),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  allowNegative
+                      ? RegExp(r'^-?\d*\.?\d{0,2}')
+                      : isDecimal
+                          ? RegExp(r'^\d*\.?\d{0,2}')
+                          : RegExp(r'^\d+'),
+                ),
+              ],
               decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                suffixText: unit,
+                suffixStyle: TextStyle(color: Colors.grey[600]),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -766,47 +682,157 @@ class _FormulairePageState extends State<FormulairePage> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Color(0xFF2E7D32)),
                 ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red[400]!),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red[600]!, width: 1.5),
+                ),
                 filled: true,
                 fillColor: Colors.grey[50],
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              items: items.map((item) {
-                return DropdownMenuItem<int>(
-                  value: item.value,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          item.label,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (item.description != null) ...[
-                          SizedBox(height: 2),
-                          Text(
-                            item.description!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-              onChanged: onChanged,
               validator: (value) {
-                if (value == null) return 'Veuillez sélectionner une option';
+                if (value == null || value.isEmpty) {
+                  return 'Ce champ est obligatoire';
+                }
+
+                final parsed = double.tryParse(value);
+                if (parsed == null) {
+                  return isDecimal
+                      ? 'Valeur décimale invalide'
+                      : 'Valeur entière invalide';
+                }
+
+                // Validation de la plage — correspond à FEATURE_RANGES dans app.py
+                if (min != null && parsed < min) {
+                  final minStr = min == min.truncateToDouble()
+                      ? min.toInt().toString()
+                      : min.toString();
+                  return 'Minimum : $minStr $unit';
+                }
+                if (max != null && parsed > max) {
+                  final maxStr = max == max.truncateToDouble()
+                      ? max.toInt().toString()
+                      : max.toString();
+                  return 'Maximum : $maxStr $unit';
+                }
+
                 return null;
               },
+            ),
+            if (helperText != null) ...[
+              SizedBox(height: 6),
+              Text(
+                helperText,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[500],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required IconData icon,
+    required String label,
+    required int? value,
+    required List<DropdownItem> items,
+    required Function(int?) onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E7D32).withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 18, color: const Color(0xFF2E7D32)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1B5E20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButtonFormField<int>(
+                  value: value,
+                  isExpanded: true,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF2E7D32)),
+                  iconSize: 24,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    hintText: 'Sélectionner une option',
+                    hintStyle:
+                        TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                  ),
+                  items: items.map((item) {
+                    return DropdownMenuItem<int>(
+                      value: item.value,
+                      child: Text(
+                        item.label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1B5E20),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: onChanged,
+                  validator: (value) {
+                    if (value == null) return 'Veuillez sélectionner une option';
+                    return null;
+                  },
+                ),
+              ),
             ),
           ],
         ),
@@ -814,81 +840,77 @@ class _FormulairePageState extends State<FormulairePage> {
     );
   }
 
-Widget _buildNavigationButtons() {
-  return Container(
-    padding: EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border(
-        top: BorderSide(color: Colors.grey[100]!),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          offset: Offset(0, -2),
-        ),
-      ],
-    ),
-    child: SlideInWidget(
-      delay: 300,
-      child: Row(
-        children: [
-          if (_currentStep > 0) ...[
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _previousStep,
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  side: BorderSide(color: Color(0xFF2E7D32)),
-                ),
-                child: Text(
-                  'Précédent',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 16),
-          ],
-          Expanded(
-            flex: _currentStep > 0 ? 1 : 2,
-            child: ElevatedButton(
-              onPressed: _currentStep < _formSteps.length - 1
-                  ? _nextStep
-                  : _analyserRisque,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                shadowColor: Color(0xFF2E7D32).withOpacity(0.3),
-              ),
-              child: Text(
-                _currentStep < _formSteps.length - 1
-                    ? 'Continuer'
-                    : 'Analyser le risque',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+  Widget _buildNavigationButtons() {
+    final bool isLastStep = _currentStep == _formSteps.length - 1;
+    final bool canAnalyze = isLastStep && _isFormComplete();
+
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey[100]!)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, -2),
           ),
         ],
       ),
-    ),
-  );
-}
+      child: SlideInWidget(
+        delay: 300,
+        child: Row(
+          children: [
+            if (_currentStep > 0) ...[
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _previousStep,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    side: BorderSide(color: Color(0xFF2E7D32)),
+                  ),
+                  child: Text(
+                    'Précédent',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16),
+            ],
+            Expanded(
+              flex: _currentStep > 0 ? 1 : 2,
+              child: ElevatedButton(
+                onPressed: (!isLastStep)
+                    ? _nextStep
+                    : (canAnalyze ? _analyserRisque : null),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  elevation: 4,
+                  disabledBackgroundColor: Colors.grey[300],
+                ),
+                child: Text(
+                  !isLastStep ? 'Continuer' : 'Analyser le risque',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoadingAnimation() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -906,11 +928,8 @@ Widget _buildNavigationButtons() {
                     color: Color(0xFF2E7D32).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.psychology_rounded,
-                    size: 50,
-                    color: Color(0xFF2E7D32),
-                  ),
+                  child: Icon(Icons.psychology_rounded,
+                      size: 50, color: Color(0xFF2E7D32)),
                 ),
               ),
               SizedBox(height: 32),
@@ -928,17 +947,15 @@ Widget _buildNavigationButtons() {
                 'Notre IA analyse vos données pour évaluer\nvotre risque cardiovasculaire',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                  height: 1.4,
-                ),
+                    fontSize: 16, color: Colors.grey[600], height: 1.4),
               ),
               SizedBox(height: 32),
               Container(
                 width: 200,
                 child: LinearProgressIndicator(
                   backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -979,33 +996,20 @@ class FormStep {
   final String title;
   final IconData icon;
   final String description;
-
-  FormStep({
-    required this.title,
-    required this.icon,
-    required this.description,
-  });
+  FormStep({required this.title, required this.icon, required this.description});
 }
 
 class DropdownItem {
   final int value;
   final String label;
   final String? description;
-
-  DropdownItem({
-    required this.value,
-    required this.label,
-    this.description,
-  });
+  DropdownItem({required this.value, required this.label, this.description});
 }
 
-// Animation de slide depuis le bas
 class SlideInWidget extends StatefulWidget {
   final Widget child;
   final int delay;
-
   const SlideInWidget({super.key, required this.child, this.delay = 0});
-
   @override
   _SlideInWidgetState createState() => _SlideInWidgetState();
 }
@@ -1018,24 +1022,12 @@ class _SlideInWidgetState extends State<SlideInWidget>
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-
-    _animation = Tween<Offset>(
-      begin: Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
-
+        vsync: this, duration: Duration(milliseconds: 500));
+    _animation = Tween<Offset>(begin: Offset(0, 0.2), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
+      if (mounted) _controller.forward();
     });
   }
 
@@ -1049,21 +1041,15 @@ class _SlideInWidgetState extends State<SlideInWidget>
   Widget build(BuildContext context) {
     return SlideTransition(
       position: _animation,
-      child: FadeTransition(
-        opacity: _controller,
-        child: widget.child,
-      ),
+      child: FadeTransition(opacity: _controller, child: widget.child),
     );
   }
 }
 
-// Animation de scale (agrandissement)
 class ScaleInWidget extends StatefulWidget {
   final Widget child;
   final int delay;
-
   const ScaleInWidget({super.key, required this.child, this.delay = 0});
-
   @override
   _ScaleInWidgetState createState() => _ScaleInWidgetState();
 }
@@ -1076,24 +1062,12 @@ class _ScaleInWidgetState extends State<ScaleInWidget>
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 400),
-    );
-
-    _animation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
-
+        vsync: this, duration: Duration(milliseconds: 400));
+    _animation = Tween<double>(begin: 0.8, end: 1.0).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
+      if (mounted) _controller.forward();
     });
   }
 
@@ -1105,9 +1079,6 @@ class _ScaleInWidgetState extends State<ScaleInWidget>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
-      child: widget.child,
-    );
+    return ScaleTransition(scale: _animation, child: widget.child);
   }
 }

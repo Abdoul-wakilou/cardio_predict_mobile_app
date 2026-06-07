@@ -1,34 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/risk_prediction.dart';
-import '../models/patient_data.dart';
-import '../services/pdf_service.dart';
 
 class ResultatsPage extends StatelessWidget {
   final RiskPrediction prediction;
-  final PatientData? patientData;
 
-  // Constructeur principal
   const ResultatsPage({
     super.key,
     required this.prediction,
-    this.patientData, // Rendons-le optionnel
   });
 
-  // Factory pour gérer le cas null - CORRIGÉ
-  factory ResultatsPage.fromPrediction(RiskPrediction? prediction,
-      {PatientData? patientData}) {
+  factory ResultatsPage.fromPrediction(RiskPrediction? prediction) {
     return ResultatsPage(
-      prediction: prediction ?? _defaultPrediction(),
-      patientData: patientData, // Passez patientData
-    );
-  }
-
-  static RiskPrediction _defaultPrediction() {
-    return RiskPrediction(
-      niveauRisque: 0,
-      libelle: 'Non disponible',
-      description: 'Aucune donnée de prédiction',
-      conseils: ['Veuillez effectuer une nouvelle analyse'],
+      prediction: prediction ?? RiskPrediction.defaultPrediction(),
     );
   }
 
@@ -37,49 +20,33 @@ class ResultatsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Résultats de l\'analyse',
           style: TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 20,
           ),
         ),
-        backgroundColor: Color(0xFF2E7D32),
+        backgroundColor: const Color(0xFF2E7D32),
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        padding: EdgeInsets.all(24),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Header avec résultat principal
-            SlideInWidget(
-              delay: 0,
-              child: _buildResultHeader(),
-            ),
-            SizedBox(height: 32),
-
-            // Indicateur de risque
-            ScaleInWidget(
-              delay: 200,
-              child: _buildRiskIndicator(context), // Passer context ici
-            ),
-            SizedBox(height: 40),
-
-            // Section conseils
-            SlideInWidget(
-              delay: 400,
-              child: _buildConseilsSection(),
-            ),
-            SizedBox(height: 40),
-
-            // Actions
-            FadeInWidget(
-              delay: 600,
-              child: _buildActionButtons(context),
-            ),
+            _buildResultHeader(),
+            const SizedBox(height: 24),
+            _buildRiskIndicator(),
+            const SizedBox(height: 24),
+            if (prediction.probabilityDisease != null)
+              _buildProbabilitySection(),
+            const SizedBox(height: 24),
+            _buildConseilsSection(context),
+            const SizedBox(height: 32),
+            _buildActionButtons(context),
           ],
         ),
       ),
@@ -87,9 +54,14 @@ class ResultatsPage extends StatelessWidget {
   }
 
   Widget _buildResultHeader() {
+    // Déterminer le libellé du badge
+    final isMalade = prediction.riskCategory == 'Malade';
+    final badgeText = isMalade ? 'MALADE' : 'SAIN';
+    final badgeColor = isMalade ? Colors.red : Colors.green;
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -100,136 +72,135 @@ class ResultatsPage extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: prediction.color.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: prediction.color.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: prediction.color.withOpacity(0.2), width: 1),
       ),
       child: Column(
         children: [
-          // Icone animée
-          PulseWidget(
-            child: Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: prediction.color.withOpacity(0.1),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: prediction.color.withOpacity(0.3),
-                  width: 2,
-                ),
-              ),
-              child: Icon(
-                _getRiskIcon(prediction.niveauRisque),
-                size: 48,
-                color: prediction.color,
-              ),
+          // Icône
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: prediction.color.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(
+                  color: prediction.color.withOpacity(0.3), width: 2),
             ),
+            child: Icon(_getRiskIcon(prediction.niveauRisque),
+                size: 48, color: prediction.color),
           ),
-          SizedBox(height: 20),
-
-          // Titre du niveau de risque
+          const SizedBox(height: 16),
+          // Niveau de risque
           Text(
             prediction.niveauText.toUpperCase(),
             style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: prediction.color,
-              letterSpacing: 1.2,
-            ),
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: prediction.color),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 16),
-
+          const SizedBox(height: 12),
           // Description
           Text(
             prediction.description,
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.6,
-              color: Colors.grey[700],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          // Badge Sain/Malade
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: badgeColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: badgeColor.withOpacity(0.5), width: 1),
+            ),
+            child: Text(
+              badgeText,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: badgeColor,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProbabilitySection() {
+    final probabilityPercent = prediction.probabilityDisease != null
+        ? '${(prediction.probabilityDisease! * 100).toStringAsFixed(1)}%'
+        : 'N/A';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Probabilité de maladie:',
+                  style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(probabilityPercent,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: prediction.color)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: prediction.probabilityDisease?.clamp(0.0, 1.0),
+            backgroundColor: Colors.grey[200],
+            color: prediction.color,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(4),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRiskIndicator(BuildContext context) {
-    // Ajouter BuildContext context ici
+  Widget _buildRiskIndicator() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[100]!),
       ),
       child: Column(
         children: [
-          Text(
-            'NIVEAU DE RISQUE',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-              letterSpacing: 1.0,
-            ),
-          ),
-          SizedBox(height: 16),
-
-          // Barre de progression du risque
+          const Text('NIVEAU DE RISQUE',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey)),
+          const SizedBox(height: 12),
           Container(
-            height: 12,
+            height: 10,
             decoration: BoxDecoration(
               color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(5),
             ),
-            child: Stack(
-              children: [
-                // Fond de la barre
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-
-                // Partie remplie selon le risque
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 1000),
-                  curve: Curves.easeOut,
-                  width: _getRiskPercentage(prediction.niveauRisque, context),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        prediction.color.withOpacity(0.8),
-                        prediction.color,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: prediction.color.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 1000),
+              width: _getRiskPercentage(),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  prediction.color.withOpacity(0.8),
+                  prediction.color
+                ]),
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
           ),
-          SizedBox(height: 12),
-
-          // Légende des niveaux
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -257,11 +228,11 @@ class ResultatsPage extends StatelessWidget {
             shape: BoxShape.circle,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             color: isActive ? _getRiskColor(level) : Colors.grey[500],
           ),
@@ -270,123 +241,130 @@ class ResultatsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildConseilsSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[100]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
+  Widget _buildConseilsSection(BuildContext context) {
+    if (prediction.conseils.isEmpty) {
+      return Container(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // En-tête conseils
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF2E7D32).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.medical_services_rounded,
-                    size: 22,
-                    color: Color(0xFF2E7D32),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Recommandations Personnalisées',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1B5E20),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
+        decoration: BoxDecoration(
+            color: Colors.grey[50], borderRadius: BorderRadius.circular(16)),
+        child: const Center(
+            child: Text('Aucune recommandation disponible',
+                style: TextStyle(color: Colors.grey))),
+      );
+    }
 
-            // Liste des conseils avec animations séquentielles
-            Column(
-              children: prediction.conseils.asMap().entries.map((entry) {
-                final index = entry.key;
-                final conseil = entry.value;
-                return SlideInWidget(
-                  delay: 500 + (index * 100),
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 16),
-                    child: _buildConseilItem(conseil, index),
-                  ),
-                );
-              }).toList(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // En-tête de la section
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D32).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.medical_services_rounded,
+                  size: 22, color: Color(0xFF2E7D32)),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Recommandations',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B5E20)),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 16),
+        // Liste des recommandations en accordéons
+        ...prediction.conseils.asMap().entries.map((entry) {
+          final index = entry.key;
+          final conseil = entry.value;
+          return _buildAccordionItem(
+            context: context,
+            number: index + 1,
+            text: conseil,
+            color: prediction.color,
+          );
+        }).toList(),
+      ],
     );
   }
 
-  Widget _buildConseilItem(String conseil, int index) {
+  Widget _buildAccordionItem({
+    required BuildContext context,
+    required int number,
+    required String text,
+    required Color color,
+  }) {
     return Container(
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Numéro du conseil
-          Container(
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          leading: Container(
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: Color(0xFF2E7D32).withOpacity(0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Color(0xFF2E7D32).withOpacity(0.3),
-              ),
             ),
             child: Center(
               child: Text(
-                '${index + 1}',
+                '$number',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF2E7D32),
+                  color: color,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 16),
-
-          // Texte du conseil
-          Expanded(
-            child: Text(
-              conseil,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.left,
+          title: Text(
+            text.length > 60 ? '${text.substring(0, 60)}...' : text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
+          trailing: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF2E7D32)),
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -394,367 +372,75 @@ class ResultatsPage extends StatelessWidget {
   Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [
-        // Bouton principal - Nouvelle analyse
-        Container(
+        SizedBox(
           width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Color(0xFF2E7D32),
-                Color(0xFF4CAF50),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFF2E7D32).withOpacity(0.3),
-                blurRadius: 15,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
+            onPressed: () =>
+                Navigator.popUntil(context, (route) => route.isFirst),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              padding: EdgeInsets.symmetric(vertical: 18, horizontal: 32),
+              backgroundColor: const Color(0xFF2E7D32),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+                  borderRadius: BorderRadius.circular(12)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.refresh_rounded,
-                  size: 22,
-                  color: Colors.white,
-                ),
+                Icon(Icons.refresh_rounded, size: 20, color: Colors.white),
                 SizedBox(width: 12),
-                Text(
-                  'Nouvelle Analyse',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
+                Text('Nouvelle Analyse',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
               ],
             ),
           ),
         ),
-        SizedBox(height: 16),
-
-        // Bouton secondaire - Télécharger PDF
-        OutlinedButton(
-          onPressed: () => _downloadPDF(context),
-          style: OutlinedButton.styleFrom(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () =>
+                Navigator.popUntil(context, (route) => route.isFirst),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              side: const BorderSide(color: Color(0xFF2E7D32)),
             ),
-            side: BorderSide(color: Color(0xFF2E7D32)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.download_rounded,
-                size: 20,
-                color: Color(0xFF2E7D32),
-              ),
-              SizedBox(width: 10),
-              Text(
-                'Télécharger mon Rapport',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2E7D32),
-                ),
-              ),
-            ],
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.home_rounded, size: 20, color: Color(0xFF2E7D32)),
+                SizedBox(width: 12),
+                Text('Accueil',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2E7D32))),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  void _downloadPDF(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        padding: EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            SizedBox(height: 20),
-            Icon(
-              Icons.picture_as_pdf_rounded,
-              size: 48,
-              color: Color(0xFF2E7D32),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Télécharger le Rapport',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1B5E20),
-              ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Votre rapport personnalisé sera généré au format PDF avec :',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            _buildPDFFeature(' Vos données de santé analysées'),
-            _buildPDFFeature(' Votre niveau de risque détaillé'),
-            _buildPDFFeature(' Conseils personnalisés'),
-            _buildPDFFeature(' Date de l\'analyse'),
-            _buildPDFFeature(' Mention CardioPredict'),
-            SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      side: BorderSide(color: Colors.grey[400]!),
-                    ),
-                    child: Text(
-                      'Annuler',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _generateRealPDF(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Générer le PDF',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _generateRealPDF(BuildContext context) async {
-    // Afficher un indicateur de chargement
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('Génération du PDF...'),
-          ],
-        ),
-        content: Text('Veuillez patienter quelques instants.'),
-      ),
-    );
-
-    try {
-      print('🔄 Début de la génération du PDF...');
-
-      // Utiliser la méthode simplifiée que vous avez ajoutée
-      final pdfFile = await PdfService.generateSimpleReport(
-        prediction: prediction,
-        analysisDate: DateTime.now(),
-      );
-
-      print('✅ PDF généré: ${pdfFile.path}');
-
-      // Fermer le dialogue de chargement
-      Navigator.pop(context);
-
-      // Ouvrir le fichier
-      await PdfService.openFile(pdfFile);
-
-      print('📄 Fichier ouvert avec succès');
-
-      // Afficher un message de succès
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text('PDF généré avec succès !'),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      // Fermer le dialogue de chargement en cas d'erreur
-      Navigator.pop(context);
-
-      print('❌ Erreur lors de la génération du PDF: $e');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text('Erreur: ${e.toString()}'),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  Widget _buildPDFFeature(String text) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle, size: 16, color: Color(0xFF2E7D32)),
-          SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _simulatePDFDownload(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.download_rounded, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Génération du rapport PDF en cours...',
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Color(0xFF2E7D32),
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-
-    // Simulation du téléchargement
-    Future.delayed(Duration(seconds: 2), () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Rapport PDF généré avec succès !',
-                  style: TextStyle(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-    });
-  }
-
-  double _getRiskPercentage(int niveau, BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width -
-        88; // 24*2 padding + 20*2 container padding
-    switch (niveau) {
+  double _getRiskPercentage() {
+    switch (prediction.niveauRisque) {
       case 0:
-        return screenWidth * 0.0;
+        return 0.0;
       case 1:
-        return screenWidth * 0.25;
+        return 0.25;
       case 2:
-        return screenWidth * 0.5;
+        return 0.5;
       case 3:
-        return screenWidth * 0.75;
+        return 0.75;
       case 4:
-        return screenWidth * 1.0;
+        return 1.0;
       default:
-        return screenWidth * 0.0;
+        return 0.0;
     }
   }
 
@@ -790,221 +476,5 @@ class ResultatsPage extends StatelessWidget {
       default:
         return Icons.help_rounded;
     }
-  }
-}
-
-// =============================================
-// WIDGETS D'ANIMATION (garder les mêmes)
-// =============================================
-
-class SlideInWidget extends StatefulWidget {
-  final Widget child;
-  final int delay;
-
-  const SlideInWidget({super.key, required this.child, this.delay = 0});
-
-  @override
-  _SlideInWidgetState createState() => _SlideInWidgetState();
-}
-
-class _SlideInWidgetState extends State<SlideInWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 600),
-    );
-
-    _animation = Tween<Offset>(
-      begin: Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _animation,
-      child: FadeTransition(
-        opacity: _controller,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-class ScaleInWidget extends StatefulWidget {
-  final Widget child;
-  final int delay;
-
-  const ScaleInWidget({super.key, required this.child, this.delay = 0});
-
-  @override
-  _ScaleInWidgetState createState() => _ScaleInWidgetState();
-}
-
-class _ScaleInWidgetState extends State<ScaleInWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-
-    _animation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
-      child: widget.child,
-    );
-  }
-}
-
-class FadeInWidget extends StatefulWidget {
-  final Widget child;
-  final int delay;
-
-  const FadeInWidget({super.key, required this.child, this.delay = 0});
-
-  @override
-  _FadeInWidgetState createState() => _FadeInWidgetState();
-}
-
-class _FadeInWidgetState extends State<FadeInWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 800),
-    );
-
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    ));
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _animation,
-      child: widget.child,
-    );
-  }
-}
-
-class PulseWidget extends StatefulWidget {
-  final Widget child;
-
-  const PulseWidget({super.key, required this.child});
-
-  @override
-  _PulseWidgetState createState() => _PulseWidgetState();
-}
-
-class _PulseWidgetState extends State<PulseWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(
-      begin: 0.95,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
-      child: widget.child,
-    );
   }
 }
