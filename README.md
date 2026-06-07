@@ -111,6 +111,10 @@ flutter pub get
 flutter run
 ```
 
+```bash
+flutter run -d chrome
+```
+
 ---
 
 ## 🔗 Communication avec le backend IA
