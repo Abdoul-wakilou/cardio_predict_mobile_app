@@ -113,6 +113,7 @@ flutter run
 
 ```bash
 flutter run -d chrome
+flutter run -d chrome --web-port 6000
 ```
 
 ---
@@ -283,6 +284,6 @@ Ce projet est distribué sous licence **MIT**.
 
 ---
 
-*Dernière mise à jour : Décembre 2025*  
+*Dernière mise à jour : Juillet 2026*  
 *Version Flutter : 3.0+*  
 *Backend requis : Flask API (cardio_predict_model)*
