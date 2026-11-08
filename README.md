@@ -3,9 +3,9 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
 ![Licence MIT](https://img.shields.io/badge/Licence-MIT-green)
 
-**FR —** Application mobile qui aide les professionnels de santé à estimer le risque cardiovasculaire d'un patient. Le médecin saisit 13 paramètres cliniques ; un modèle Random Forest, servi par une API Flask, renvoie une probabilité et un niveau de risque. Interface disponible en français et en anglais.
+**FR —** Application mobile qui aide les professionnels de santé à estimer le risque cardiovasculaire d'un patient. Le médecin saisit 13 paramètres cliniques ; un modèle d'apprentissage automatique, servi par une API Flask, renvoie une probabilité et un niveau de risque. Interface disponible en français et en anglais.
 
-**EN —** Mobile app that helps healthcare professionals estimate a patient's cardiovascular risk. The clinician enters 13 clinical parameters; a Random Forest model served by a Flask API returns a probability and a risk level. The interface is available in French and English.
+**EN —** Mobile app that helps healthcare professionals estimate a patient's cardiovascular risk. The clinician enters 13 clinical parameters; a machine learning model served by a Flask API returns a probability and a risk level. The interface is available in French and English.
 
 > **Outil d'aide à la décision, pas un diagnostic.** Voir l'[avertissement médical](#11-avertissement-médical).
 
@@ -40,10 +40,9 @@ Les images sont à déposer dans [`docs/screenshots/`](docs/screenshots/).
 
 ```mermaid
 flowchart LR
-    A["Application Flutter<br/>saisie et affichage"] -- "POST /predict<br/>13 variables en JSON" --> B["API Flask<br/>validation des plages"]
-    B --> C["Préprocesseur<br/>StandardScaler + OneHotEncoder"]
-    C --> D["Random Forest<br/>scikit-learn"]
-    D -- "classe, probabilité" --> B
+    A["Application Flutter<br/>saisie et affichage"] -- "POST /predict<br/>13 variables en JSON" --> B["API Flask<br/>validation stricte"]
+    B --> C["Pipeline scikit-learn<br/>imputation, encodage, SVM"]
+    C -- "classe, probabilité" --> B
     B -- "niveau de risque,<br/>recommandations" --> A
 ```
 
@@ -55,7 +54,7 @@ Une réponse incomplète ou incohérente de l'API provoque une erreur visible : 
 
 | Champ | Type | Plage | Encodage |
 |---|---|---|---|
-| `age` | entier | 1 – 120 | années |
+| `age` | entier | 18 – 120 | années |
 | `sex` | entier | 0 – 1 | 0 femme, 1 homme |
 | `cp` | entier | 0 – 3 | 0 angine typique, 1 atypique, 2 non angineuse, 3 asymptomatique |
 | `trestbps` | entier | 50 – 250 | mmHg |
@@ -87,7 +86,7 @@ L'application n'utilise aucun plugin natif et seulement deux paquets externes, t
 
 - Flutter 3.32 ou plus récent (développé et testé avec Flutter 3.47.9)
 - Un émulateur Android ou un téléphone
-- L'API du dépôt [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model), lancée localement avec `python app.py` (port 5000)
+- L'API du dépôt [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model), installée selon son README, puis lancée pour l'émulateur avec `waitress-serve --listen=0.0.0.0:5000 api.app:app` (réseau de développement uniquement)
 
 ### Lancement en local
 
@@ -163,34 +162,35 @@ test/                validation, conversion, réponses de l'API, parcours comple
 
 Les contrôles du formulaire servent le confort du médecin. **La vraie validation doit rester côté serveur**, car une application mobile peut être contournée. Aucune information d'identité (nom, numéro de dossier) n'est demandée.
 
-Le déploiement en production de l'API reste à réaliser : HTTPS, authentification et limitation du débit relèvent du dépôt du modèle.
+La validation stricte et la limitation du débit sont assurées par l'API. Son déploiement public reste à réaliser derrière un proxy HTTPS.
 
 ## 10. Limites et perspectives
 
 ### Performances du modèle : une correction à connaître
 
-Le mémoire rapporte les performances de la colonne de gauche. Une relecture a montré qu'elles sont **surestimées par une fuite de données** : la variable `ca`, absente pour 62,9 % des patients, était imputée par la médiane *de la classe à prédire*, avant la séparation entraînement/test. Pour ces patients, `ca` révélait donc directement le diagnostic.
+Le mémoire rapporte des performances **surestimées**, comme l'a établi une revue postérieure à la soutenance. La variable `ca`, absente pour 62,9 % des patients, était imputée par la médiane *de la classe à prédire* avant le découpage : pour ces patients, elle révélait le diagnostic. Les valeurs `chol = 0`, qui codent une mesure absente, renseignaient aussi le modèle sur le centre d'origine.
 
-| Random Forest | Mémoire (avec fuite) | Réévaluation sans fuite (même découpage) | Validation croisée à 5 plis sans fuite |
-|---|---|---|---|
-| Accuracy | 92,8 % | 83,7 % | 82,3 % (± 2,2) |
-| AUC | 0,980 | 0,885 | 0,885 (± 0,025) |
-| Sensibilité | 95,0 % | 88,5 % | – |
-| Spécificité | 90,2 % | 77,7 % | – |
+Le dépôt du modèle corrige ces défauts. Évaluation sur les mêmes 251 patients de test :
 
-La réévaluation impute sans utiliser la cible, à partir des seules données d'entraînement, avec les mêmes hyperparamètres. **Les chiffres sans fuite sont ceux à retenir.** Le réentraînement du modèle servi par l'API est traité dans le dépôt [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model).
+| Modèle | Accuracy | AUC | Sensibilité | Spécificité |
+|---|---:|---:|---:|---:|
+| Mémoire, Random Forest (avec fuite) | 92,83 % | 0,980 | 94,96 % | 90,18 % |
+| Corrigé, Random Forest | 78,49 % | 0,869 | 84,17 % | 71,43 % |
+| **Corrigé, SVM (modèle servi par l'API)** | **76,49 %** | **0,844** | **82,01 %** | **69,64 %** |
+
+**Seules les lignes corrigées sont à retenir.** Méthode, intervalles de confiance et validation par centre sont détaillés dans le [README du modèle](https://github.com/Abdoul-wakilou/cardio_predict_model#écart-avec-le-mémoire).
 
 ### Autres limites
 
 - **Ce qui est prédit :** la présence d'une sténose coronarienne d'au moins 50 % à l'examen, et non la survenue future d'un événement cardiovasculaire.
 - **Population :** données UCI de quatre centres (États-Unis, Hongrie, Suisse), anciennes, à 78 % masculines et sans patient béninois. Le modèle n'a pas été validé localement.
 - **Examens requis :** la fluoroscopie (`ca`), la scintigraphie au thallium (`thal`) et l'épreuve d'effort ne sont pas toujours disponibles.
-- **Valeurs manquantes :** `chol = 0` signale en réalité une mesure absente pour 157 patients.
-- **Recommandations :** elles viennent de règles écrites dans l'API, en français uniquement, et n'ont pas été validées cliniquement.
+- **Niveaux et recommandations :** ils viennent de règles écrites dans l'API, en français uniquement pour les recommandations, et n'ont pas été validés par des cardiologues.
+- **Transfert :** les performances chutent fortement entre centres (AUC de 0,655 à Long Beach VA quand ce centre est exclu de l'entraînement).
 
 ### Perspectives
 
-- Valider le modèle sur des données béninoises et calibrer ses probabilités
+- Valider le modèle sur des données béninoises
 - Proposer un mode sans examens invasifs
 - Traduire les recommandations côté API
 - Évaluer l'outil avec des professionnels de santé
@@ -210,6 +210,8 @@ CardioPredict est un outil d'aide à la décision issu d'un travail universitair
 - Site : [abdevfreelance.com](https://abdevfreelance.com)
 
 **Mémoire :** *Développement d'un modèle d'intelligence artificielle pour la prédiction du risque cardiovasculaire et son intégration dans une application mobile*, Master en Génie Logiciel, IFRI, Université d'Abomey-Calavi. Soutenu le 29 juillet 2026, mention Bien. Encadrant : Dr (MA) Mêton Mêton Atindehou.
+
+Le mémoire est disponible sur demande auprès de l'auteur.
 
 **Modèle et API :** [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model)
 
