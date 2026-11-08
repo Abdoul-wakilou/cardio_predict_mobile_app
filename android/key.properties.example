@@ -1,0 +1,5 @@
+# Copier ce fichier vers android/key.properties (non commité) et le compléter.
+storeFile=/chemin/vers/cle-de-signature.jks
+storePassword=A_COMPLETER
+keyAlias=A_COMPLETER
+keyPassword=A_COMPLETER

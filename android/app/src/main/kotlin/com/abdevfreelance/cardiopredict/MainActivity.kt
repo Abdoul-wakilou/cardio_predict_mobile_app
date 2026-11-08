@@ -1,4 +1,4 @@
-package com.example.cardio_predict_mobile_app
+package com.abdevfreelance.cardiopredict
 
 import io.flutter.embedding.android.FlutterActivity
 
