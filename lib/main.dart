@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'pages/formulaire_page.dart';
 import 'pages/resultats_page.dart';
-import 'pages/connection_test_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,7 +25,6 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/formulaire': (context) => const FormulairePage(),
         '/resultats': (context) => ResultatsPage.fromPrediction(null),
-        '/test-connexion': (context) => const ConnectionTestPage(),
       },
     );
   }
