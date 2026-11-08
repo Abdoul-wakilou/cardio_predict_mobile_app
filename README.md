@@ -85,6 +85,7 @@ L'application n'utilise aucun plugin natif et seulement deux paquets externes, t
 ### Prérequis
 
 - Flutter 3.32 ou plus récent (développé et testé avec Flutter 3.47.9)
+- Le SDK Android et un JDK 17 ou plus récent
 - Un émulateur Android ou un téléphone
 - L'API du dépôt [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model), installée selon son README, puis lancée pour l'émulateur avec `waitress-serve --listen=0.0.0.0:5000 api.app:app` (réseau de développement uniquement)
 
