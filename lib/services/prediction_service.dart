@@ -13,6 +13,7 @@ enum PredictionErrorKind {
   timeout,
   serverUnavailable,
   rejected,
+  rateLimited,
   invalidResponse,
 }
 
@@ -81,6 +82,9 @@ class HttpPredictionService implements PredictionService {
 
     if (response.statusCode >= 500) {
       throw const PredictionException(PredictionErrorKind.serverUnavailable);
+    }
+    if (response.statusCode == 429) {
+      throw const PredictionException(PredictionErrorKind.rateLimited);
     }
     if (response.statusCode != 200) {
       throw const PredictionException(PredictionErrorKind.rejected);

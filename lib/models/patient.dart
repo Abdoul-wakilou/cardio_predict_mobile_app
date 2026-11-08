@@ -33,7 +33,7 @@ class Patient {
   final int vesselCount;
   final int thalliumResult;
 
-  /// Noms et encodage 0-based du contrat de l'API Flask (`EXPECTED_FEATURES`).
+  /// Noms et encodage 0-based du contrat de l'API Flask (`SCHEMA`).
   Map<String, num> toJson() => {
     'age': age,
     'sex': sex,

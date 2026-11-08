@@ -18,9 +18,9 @@ String type(NumericField field, String keys) {
 
 void main() {
   group('validateNumeric', () {
-    test('accepte les bornes de FEATURE_RANGES', () {
+    test('accepte les bornes de l’API', () {
       const bounds = {
-        NumericField.age: ['1', '120'],
+        NumericField.age: ['18', '120'],
         NumericField.restingBloodPressure: ['50', '250'],
         NumericField.maxHeartRate: ['50', '250'],
         NumericField.cholesterol: ['50', '700'],
@@ -38,7 +38,7 @@ void main() {
     });
 
     test('refuse les valeurs hors plage', () {
-      expect(validateNumeric(NumericField.age, '0'), NumericError.tooLow);
+      expect(validateNumeric(NumericField.age, '17'), NumericError.tooLow);
       expect(validateNumeric(NumericField.age, '121'), NumericError.tooHigh);
       expect(
         validateNumeric(NumericField.stDepression, '-5.1'),

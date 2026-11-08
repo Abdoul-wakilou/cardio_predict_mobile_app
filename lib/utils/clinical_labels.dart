@@ -168,6 +168,7 @@ extension ClinicalLabels on AppLocalizations {
     PredictionErrorKind.timeout => failureTimeout,
     PredictionErrorKind.serverUnavailable => failureServerUnavailable,
     PredictionErrorKind.rejected => failureRejected,
+    PredictionErrorKind.rateLimited => failureRateLimited,
     PredictionErrorKind.invalidResponse => failureInvalidResponse,
   };
 }

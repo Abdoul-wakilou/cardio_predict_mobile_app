@@ -169,6 +169,16 @@ void main() {
       );
     });
 
+    test('erreur 429 : trop de requêtes', () {
+      expect(
+        serviceReturning(
+          '{"error": "Trop de requêtes."}',
+          status: 429,
+        ).predict(patient, languageCode: 'fr'),
+        failsWith(PredictionErrorKind.rateLimited),
+      );
+    });
+
     test('pas de connexion', () {
       final service = HttpPredictionService(
         baseUri: Uri.parse('https://api.exemple.org'),

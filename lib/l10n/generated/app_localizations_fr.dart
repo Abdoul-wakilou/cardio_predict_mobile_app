@@ -40,7 +40,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeFeatureAiBody =>
-      'Modèle Random Forest, jeu de données de 834 patients';
+      'Modèle construit sur un jeu de données de 834 patients';
 
   @override
   String get homeFeaturePrivacyTitle => 'Respect de la confidentialité';
@@ -193,7 +193,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fieldAge => 'Âge du patient';
 
   @override
-  String get fieldAgeHelp => 'Plage acceptée : 1 – 120 ans';
+  String get fieldAgeHelp => 'Plage acceptée : 18 – 120 ans';
 
   @override
   String get fieldRestingBp => 'Pression artérielle au repos';
@@ -417,6 +417,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le serveur a refusé ces données. Vérifiez les valeurs saisies.';
 
   @override
+  String get failureRateLimited =>
+      'Trop de demandes ont été envoyées. Réessayez dans un instant.';
+
+  @override
   String get failureInvalidResponse =>
       'Le serveur a renvoyé une réponse inattendue. Aucun résultat ne peut être affiché.';
 
@@ -443,23 +447,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get riskDescriptionVeryLow =>
-      'Probabilité estimée très faible. Bilan annuel recommandé.';
+      'Probabilité très faible selon le modèle. Bilan annuel conseillé.';
 
   @override
   String get riskDescriptionLow =>
-      'Risque faible détecté. Surveillance médicale régulière.';
+      'Probabilité faible selon le modèle. Suivi médical régulier.';
 
   @override
   String get riskDescriptionModerate =>
-      'Risque modéré. Consultation médicale dans le mois.';
+      'Risque modéré selon le modèle. Consultation dans le mois.';
 
   @override
   String get riskDescriptionHigh =>
-      'Risque élevé. Consultation cardiologique rapide (sous 8 jours).';
+      'Risque élevé selon le modèle. Consultation cardiologique sous 8 jours.';
 
   @override
   String get riskDescriptionVeryHigh =>
-      'Risque très élevé. Consultation urgente (sous 48 h).';
+      'Risque très élevé selon le modèle. Consultation médicale urgente sous 48 h.';
 
   @override
   String get verdictUnlikely =>

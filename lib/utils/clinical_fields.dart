@@ -1,10 +1,10 @@
 /// Champ du formulaire : valeur numérique saisie ou choix dans une liste.
 sealed class ClinicalField {}
 
-/// Bornes identiques à `FEATURE_RANGES` dans `app.py`. L'application les
+/// Bornes identiques à `SCHEMA` dans `api/validation.py`. L'application les
 /// vérifie pour le confort du médecin ; la vraie validation reste côté serveur.
 enum NumericField implements ClinicalField {
-  age(min: 1, max: 120),
+  age(min: 18, max: 120),
   restingBloodPressure(min: 50, max: 250),
   maxHeartRate(min: 50, max: 250),
   cholesterol(min: 50, max: 700),

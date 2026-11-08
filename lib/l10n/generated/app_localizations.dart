@@ -155,7 +155,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeFeatureAiBody.
   ///
   /// In fr, this message translates to:
-  /// **'Modèle Random Forest, jeu de données de 834 patients'**
+  /// **'Modèle construit sur un jeu de données de 834 patients'**
   String get homeFeatureAiBody;
 
   /// No description provided for @homeFeaturePrivacyTitle.
@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @fieldAgeHelp.
   ///
   /// In fr, this message translates to:
-  /// **'Plage acceptée : 1 – 120 ans'**
+  /// **'Plage acceptée : 18 – 120 ans'**
   String get fieldAgeHelp;
 
   /// No description provided for @fieldRestingBp.
@@ -860,6 +860,12 @@ abstract class AppLocalizations {
   /// **'Le serveur a refusé ces données. Vérifiez les valeurs saisies.'**
   String get failureRejected;
 
+  /// No description provided for @failureRateLimited.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de demandes ont été envoyées. Réessayez dans un instant.'**
+  String get failureRateLimited;
+
   /// No description provided for @failureInvalidResponse.
   ///
   /// In fr, this message translates to:
@@ -911,31 +917,31 @@ abstract class AppLocalizations {
   /// No description provided for @riskDescriptionVeryLow.
   ///
   /// In fr, this message translates to:
-  /// **'Probabilité estimée très faible. Bilan annuel recommandé.'**
+  /// **'Probabilité très faible selon le modèle. Bilan annuel conseillé.'**
   String get riskDescriptionVeryLow;
 
   /// No description provided for @riskDescriptionLow.
   ///
   /// In fr, this message translates to:
-  /// **'Risque faible détecté. Surveillance médicale régulière.'**
+  /// **'Probabilité faible selon le modèle. Suivi médical régulier.'**
   String get riskDescriptionLow;
 
   /// No description provided for @riskDescriptionModerate.
   ///
   /// In fr, this message translates to:
-  /// **'Risque modéré. Consultation médicale dans le mois.'**
+  /// **'Risque modéré selon le modèle. Consultation dans le mois.'**
   String get riskDescriptionModerate;
 
   /// No description provided for @riskDescriptionHigh.
   ///
   /// In fr, this message translates to:
-  /// **'Risque élevé. Consultation cardiologique rapide (sous 8 jours).'**
+  /// **'Risque élevé selon le modèle. Consultation cardiologique sous 8 jours.'**
   String get riskDescriptionHigh;
 
   /// No description provided for @riskDescriptionVeryHigh.
   ///
   /// In fr, this message translates to:
-  /// **'Risque très élevé. Consultation urgente (sous 48 h).'**
+  /// **'Risque très élevé selon le modèle. Consultation médicale urgente sous 48 h.'**
   String get riskDescriptionVeryHigh;
 
   /// No description provided for @verdictUnlikely.
