@@ -26,15 +26,28 @@ Ce dépôt contient l'application mobile réalisée pour le mémoire de Master e
 
 ## 4. Captures d'écran
 
-Les images sont à déposer dans [`docs/screenshots/`](docs/screenshots/).
-
 | Accueil | Formulaire | Résultat |
 |---|---|---|
-| `accueil.png` | `formulaire.png` | `resultat.png` |
-
-<!-- Une fois les images ajoutées, remplacer la ligne ci-dessus par :
 | ![Accueil](docs/screenshots/accueil.png) | ![Formulaire](docs/screenshots/formulaire.png) | ![Résultat](docs/screenshots/resultat.png) |
--->
+
+<details>
+<summary>Voir les autres écrans</summary>
+
+| À propos | À propos (suite) | Étape 1 : démographie |
+|---|---|---|
+| ![À propos](docs/screenshots/a-propos.png) | ![À propos, suite](docs/screenshots/a-propos-suite.png) | ![Étape 1](docs/screenshots/formulaire-etape-1.png) |
+
+| Étape 2 : physiologie | Étape 3 : biologie | Étape 4 : données cliniques |
+|---|---|---|
+| ![Étape 2](docs/screenshots/formulaire-etape-2.png) | ![Étape 3](docs/screenshots/formulaire-etape-3.png) | ![Étape 4, suite](docs/screenshots/formulaire-etape-4-suite.png) |
+
+| Étape 4 (fin) | Recommandations | Fin des résultats |
+|---|---|---|
+| ![Étape 4, fin](docs/screenshots/formulaire-etape-4-fin.png) | ![Recommandations](docs/screenshots/resultat-recommandations.png) | ![Fin des résultats](docs/screenshots/resultat-fin.png) |
+
+</details>
+
+Captures réalisées depuis la version web, dans un cadre de téléphone simulé, avec des valeurs fictives.
 
 ## 5. Architecture
 
