@@ -107,6 +107,24 @@ adb reverse tcp:5000 tcp:5000
 flutter run --dart-define=API_BASE_URL=http://localhost:5000
 ```
 
+### Essai dans Chrome
+
+L'API n'accepte que les origines web déclarées. Le port de l'application doit donc être fixé, car Flutter en choisit un au hasard par défaut.
+
+Dans le dépôt du modèle, sous PowerShell :
+
+```powershell
+.\venv\Scripts\Activate.ps1
+$env:CARDIO_CORS_ORIGINS = "http://localhost:8080"
+waitress-serve --listen=127.0.0.1:5000 api.app:app
+```
+
+Dans un second terminal, depuis ce dépôt :
+
+```bash
+flutter run -d chrome --web-port 8080
+```
+
 ### Configuration de l'URL de l'API
 
 L'URL n'est jamais écrite dans le code. Pour un build de production, copier l'exemple puis indiquer l'adresse HTTPS réelle :
