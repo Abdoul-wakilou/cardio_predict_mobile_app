@@ -187,18 +187,21 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           children: [
             if (_form.step > 0) ...[
               Expanded(
+                flex: 2,
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(padding: _actionPadding),
                   onPressed: _previous,
-                  child: Text(l10n.actionPrevious),
+                  child: _SingleLineLabel(l10n.actionPrevious),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
             ],
             Expanded(
-              flex: 2,
+              flex: 3,
               child: FilledButton(
+                style: FilledButton.styleFrom(padding: _actionPadding),
                 onPressed: _primaryAction,
-                child: Text(
+                child: _SingleLineLabel(
                   _form.isLastStep ? l10n.actionAnalyze : l10n.actionContinue,
                 ),
               ),
@@ -206,6 +209,28 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Marges latérales réduites : deux boutons partagent la largeur du téléphone.
+const EdgeInsets _actionPadding = EdgeInsets.symmetric(
+  horizontal: AppSpacing.md,
+  vertical: 18,
+);
+
+/// Libellé toujours sur une ligne : il rétrécit sur les petits écrans ou avec
+/// une grande taille de police système, au lieu de passer à la ligne.
+class _SingleLineLabel extends StatelessWidget {
+  const _SingleLineLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(text, maxLines: 1, softWrap: false),
     );
   }
 }
