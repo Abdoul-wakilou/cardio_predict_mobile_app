@@ -1,11 +1,11 @@
-# CardioPredict — application mobile
+# CardioPredict : application mobile
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
 ![Licence MIT](https://img.shields.io/badge/Licence-MIT-green)
 
-**FR —** Application mobile qui aide les professionnels de santé à estimer le risque cardiovasculaire d'un patient. Le médecin saisit 13 paramètres cliniques ; un modèle d'apprentissage automatique, servi par une API Flask, renvoie une probabilité et un niveau de risque. Interface disponible en français et en anglais.
+**FR :** Application mobile qui aide les professionnels de santé à estimer le risque cardiovasculaire d'un patient. Le médecin saisit 13 paramètres cliniques ; un modèle d'apprentissage automatique, servi par une API Flask, renvoie une probabilité et un niveau de risque. Interface disponible en français et en anglais.
 
-**EN —** Mobile app that helps healthcare professionals estimate a patient's cardiovascular risk. The clinician enters 13 clinical parameters; a machine learning model served by a Flask API returns a probability and a risk level. The interface is available in French and English.
+**EN:** Mobile app that helps healthcare professionals estimate a patient's cardiovascular risk. The clinician enters 13 clinical parameters; a machine learning model served by a Flask API returns a probability and a risk level. The interface is available in French and English.
 
 > **Outil d'aide à la décision, pas un diagnostic.** Voir l'[avertissement médical](#11-avertissement-médical).
 
