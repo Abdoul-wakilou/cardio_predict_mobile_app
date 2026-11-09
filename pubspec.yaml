@@ -1,33 +1,27 @@
 name: cardio_predict_mobile_app
-description: "A new Flutter project."
+description: "Application mobile d'aide à l'estimation du risque cardiovasculaire (mémoire de Master, IFRI/UAC)."
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.3
+  sdk: ^3.8.0
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  http: ^1.5.0
-  flutter_vector_icons: ^2.0.0
-
-  # AJOUTEZ CES DEUX POUR LES PDFs
-  pdf: ^3.10.9
-  printing: ^5.11.2
-  
-  # Pour enregistrer les fichiers
-  path_provider: ^2.1.3
-  open_file: ^3.2.1
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.6.0
+  intl: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/images/

@@ -1,289 +1,252 @@
-# 🫀 CardioPredict — Application Mobile Flutter
+# CardioPredict — application mobile
 
-**CardioPredict** est une application mobile développée avec **Flutter**, propulsée par l'intelligence artificielle, conçue pour la **détection précoce des risques cardiovasculaires**.  
-Elle permet à l'utilisateur de saisir des données cliniques (âge, cholestérol, tension artérielle, etc.), d'envoyer ces données à une **API Flask IA**, puis d'**afficher le niveau de risque cardiovasculaire** ainsi que des **conseils personnalisés de prévention**.
+![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
+![Licence MIT](https://img.shields.io/badge/Licence-MIT-green)
 
-Ce dépôt correspond exclusivement au **frontend mobile Flutter**, qui communique avec le backend IA via une API REST.
+**FR —** Application mobile qui aide les professionnels de santé à estimer le risque cardiovasculaire d'un patient. Le médecin saisit 13 paramètres cliniques ; un modèle d'apprentissage automatique, servi par une API Flask, renvoie une probabilité et un niveau de risque. Interface disponible en français et en anglais.
 
----
+**EN —** Mobile app that helps healthcare professionals estimate a patient's cardiovascular risk. The clinician enters 13 clinical parameters; a machine learning model served by a Flask API returns a probability and a risk level. The interface is available in French and English.
 
-## 🎓 Contexte académique
+> **Outil d'aide à la décision, pas un diagnostic.** Voir l'[avertissement médical](#11-avertissement-médical).
 
-Ce projet est réalisé dans le cadre d'un **mémoire de Master 2**, portant sur :
+## 2. Contexte et objectif
 
-> **La conception d'un modèle d'intelligence artificielle pour la détection précoce des risques cardiovasculaires.**
+Au Bénin, l'accès aux spécialistes et aux outils d'évaluation du risque cardiovasculaire reste inégal. CardioPredict vise à aider les professionnels de santé à **estimer rapidement ce risque** à partir de données cliniques, au moment de la consultation.
 
-L'application mobile constitue la **couche de présentation et d'interaction utilisateur**, connectée à un backend IA développé en Python (Flask + Machine Learning).
+Ce dépôt contient l'application mobile réalisée pour le mémoire de Master en Génie Logiciel *« Développement d'un modèle d'intelligence artificielle pour la prédiction du risque cardiovasculaire et son intégration dans une application mobile »* (IFRI, Université d'Abomey-Calavi). Le modèle et l'API sont dans le dépôt [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model).
 
----
+## 3. Fonctionnalités
 
-## 🎯 Objectifs de l'application mobile
+- Formulaire en 4 étapes couvrant les 13 variables du modèle, avec contrôle de chaque saisie
+- Résultat lisible : probabilité estimée, niveau de risque sur 5 échelons, recommandations
+- Interface bilingue français / anglais, modifiable depuis chaque écran
+- Thème clair et sombre (Material 3)
+- Erreurs réseau expliquées, avec nouvel essai sans perdre la saisie
+- Aucune donnée patient conservée sur le téléphone
 
-- Offrir une **interface simple, moderne et intuitive**.
-- Permettre la **saisie sécurisée des données cliniques**.
-- Envoyer les données à l'API IA Flask.
-- Afficher :
-  - le **niveau de risque cardiovasculaire**,
-  - une **description explicative**,
-  - des **conseils personnalisés de prévention**.
-- Générer et télécharger un **rapport PDF** des résultats.
-- Ne stocker **aucune donnée sensible localement ou côté serveur**.
+## 4. Captures d'écran
 
----
+| Accueil | Formulaire | Résultat |
+|---|---|---|
+| ![Accueil](docs/screenshots/accueil.png) | ![Formulaire](docs/screenshots/formulaire.png) | ![Résultat](docs/screenshots/resultat.png) |
 
-## ✨ Fonctionnalités principales
+<details>
+<summary>Voir les autres écrans</summary>
 
-- 📋 **Formulaire de saisie** des données cliniques en 4 étapes.
-- 🔗 **Communication API** avec le backend Flask (JSON).
-- 📊 **Affichage visuel** des résultats avec graphiques animés.
-- 💡 **Conseils personnalisés** basés sur le niveau de risque.
-- 📄 **Génération PDF** de rapports détaillés (mobile uniquement).
-- 🎨 **Interface responsive** avec animations Material Design 3.
-- 🔐 **Confidentialité** : Aucun stockage de données personnelles.
+| À propos | À propos (suite) | Étape 1 : démographie |
+|---|---|---|
+| ![À propos](docs/screenshots/a-propos.png) | ![À propos, suite](docs/screenshots/a-propos-suite.png) | ![Étape 1](docs/screenshots/formulaire-etape-1.png) |
 
----
+| Étape 2 : physiologie | Étape 3 : biologie | Étape 4 : données cliniques |
+|---|---|---|
+| ![Étape 2](docs/screenshots/formulaire-etape-2.png) | ![Étape 3](docs/screenshots/formulaire-etape-3.png) | ![Étape 4, suite](docs/screenshots/formulaire-etape-4-suite.png) |
 
-## ⚙️ Technologies utilisées
+| Étape 4 (fin) | Recommandations | Fin des résultats |
+|---|---|---|
+| ![Étape 4, fin](docs/screenshots/formulaire-etape-4-fin.png) | ![Recommandations](docs/screenshots/resultat-recommandations.png) | ![Fin des résultats](docs/screenshots/resultat-fin.png) |
 
-| Domaine | Technologies |
-|-------|--------------|
-| Application mobile | Flutter (Dart) 3.0+ |
-| Gestion d'état | Provider |
-| Communication API | HTTP / REST (JSON) |
-| Génération PDF | pdf, printing, path_provider |
-| Design UI | Material Design 3 |
-| Animations | Flutter Animations |
-| Backend IA (externe) | Flask (Python + scikit-learn) |
-| Versioning | Git & GitHub |
+</details>
 
----
+Captures réalisées depuis la version web, dans un cadre de téléphone simulé, avec des valeurs fictives.
 
-## 📁 Structure du projet
+## 5. Architecture
 
-```
-cardio_predict_mobile_app/
-├── lib/
-│   ├── main.dart                  # Point d'entrée de l'application
-│   ├── models/                    # Modèles de données
-│   │   ├── risk_prediction.dart   # Résultats prédiction
-│   │   └── patient_data.dart      # Données patient
-│   ├── pages/                     # Écrans
-│   │   ├── formulaire_page.dart   # Formulaire de saisie
-│   │   └── resultats_page.dart    # Affichage résultats
-│   ├── services/                  # Services externes
-│   │   ├── api_service.dart       # Communication API Flask
-│   │   └── pdf_service.dart       # Génération PDF
-│   └── widgets/                   # Widgets réutilisables
-├── assets/
-│   └── images/                    # Images et logos
-├── pubspec.yaml                   # Dépendances Flutter
-└── README.md                      # Documentation
+```mermaid
+flowchart LR
+    A["Application Flutter<br/>saisie et affichage"] -- "POST /predict<br/>13 variables en JSON" --> B["API Flask<br/>validation stricte"]
+    B --> C["Pipeline scikit-learn<br/>imputation, encodage, SVM"]
+    C -- "classe, probabilité" --> B
+    B -- "niveau de risque,<br/>recommandations" --> A
 ```
 
----
+Le code sépare l'affichage (`screens/`, `widgets/`), la logique du formulaire (`controllers/`) et les appels réseau (`services/`). Le service de prédiction est défini par une interface, remplacée par un faux service dans les tests.
 
-## 🚀 Installation & Lancement
+Une réponse incomplète ou incohérente de l'API provoque une erreur visible : elle ne peut jamais s'afficher comme un risque faible.
+
+### Contrat avec l'API
+
+| Champ | Type | Plage | Encodage |
+|---|---|---|---|
+| `age` | entier | 18 – 120 | années |
+| `sex` | entier | 0 – 1 | 0 femme, 1 homme |
+| `cp` | entier | 0 – 3 | 0 angine typique, 1 atypique, 2 non angineuse, 3 asymptomatique |
+| `trestbps` | entier | 50 – 250 | mmHg |
+| `chol` | entier | 50 – 700 | mg/dL |
+| `fbs` | entier | 0 – 1 | glycémie à jeun > 120 mg/dL |
+| `restecg` | entier | 0 – 2 | 0 normal, 1 anomalie ST-T, 2 hypertrophie ventriculaire |
+| `thalach` | entier | 50 – 250 | bpm |
+| `exang` | entier | 0 – 1 | angine d'effort |
+| `oldpeak` | décimal | -5 – 10 | mm |
+| `slope` | entier | 0 – 2 | 0 ascendante, 1 plate, 2 descendante |
+| `ca` | entier | 0 – 3 | vaisseaux colorés en fluoroscopie |
+| `thal` | entier | 0 – 2 | scintigraphie au thallium : 0 normal, 1 défaut fixe, 2 défaut réversible |
+
+## 6. Technologies utilisées
+
+| Domaine | Choix |
+|---|---|
+| Application | Flutter, Dart, Material 3 |
+| Réseau | [`http`](https://pub.dev/packages/http) |
+| Traductions | `flutter_localizations`, [`intl`](https://pub.dev/packages/intl) |
+| Tests | `flutter_test`, `MockClient` |
+| API et modèle (dépôt séparé) | Flask, scikit-learn |
+
+L'application n'utilise aucun plugin natif et seulement deux paquets externes, tous deux publiés par l'équipe Dart.
+
+## 7. Installation
 
 ### Prérequis
 
-- **Flutter SDK ≥ 3.0**
-- **Dart SDK**
-- **Android Studio / VS Code**
-- **Émulateur Android** ou appareil physique
-- **Backend Flask** déjà lancé sur `http://localhost:5000`
+- Flutter 3.32 ou plus récent (développé et testé avec Flutter 3.47.9)
+- Le SDK Android et un JDK 17 ou plus récent
+- Un émulateur Android ou un téléphone
+- L'API du dépôt [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model), installée selon son README, puis lancée pour l'émulateur avec `waitress-serve --listen=0.0.0.0:5000 api.app:app` (réseau de développement uniquement)
 
-### Étape 1 : Cloner le dépôt
+### Lancement en local
 
 ```bash
-git clone https://github.com/Abdoul-wakilou-Tiga/cardio_predict_mobile_app.git
+git clone https://github.com/Abdoul-wakilou/cardio_predict_mobile_app.git
 cd cardio_predict_mobile_app
-```
-
-### Étape 2 : Installer les dépendances
-
-```bash
 flutter pub get
-```
-
-### Étape 3 : Lancer l'application
-
-```bash
 flutter run
 ```
 
+Sans configuration, un build de développement vise `http://10.0.2.2:5000`, adresse de la machine hôte vue depuis l'émulateur Android (`http://localhost:5000` sur le web).
+
+Sur un téléphone relié en USB, rediriger le port :
+
 ```bash
-flutter run -d chrome
-flutter run -d chrome --web-port 6000
+adb reverse tcp:5000 tcp:5000
+flutter run --dart-define=API_BASE_URL=http://localhost:5000
 ```
 
----
+### Essai dans Chrome
 
-## 🔗 Communication avec le backend IA
+L'API n'accepte que les origines web déclarées. Le port de l'application doit donc être fixé, car Flutter en choisit un au hasard par défaut.
 
-### Endpoint : `/predict`
-**Méthode :** POST  
-**Content-Type :** application/json
+Dans le dépôt du modèle, sous PowerShell :
 
-### Requête API depuis Flutter
-```dart
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-Future<Map<String, dynamic>> predictRisk(Map<String, dynamic> patientData) async {
-  final response = await http.post(
-    Uri.parse('http://10.0.2.2:5000/predict'), // Émulateur Android
-    headers: {'Content-Type': 'application/json'},
-    body: json.encode(patientData),
-  );
-  
-  if (response.statusCode == 200) {
-    return json.decode(response.body);
-  } else {
-    throw Exception('Failed to get prediction');
-  }
-}
+```powershell
+.\venv\Scripts\Activate.ps1
+$env:CARDIO_CORS_ORIGINS = "http://localhost:8080"
+waitress-serve --listen=127.0.0.1:5000 api.app:app
 ```
 
-### Réponse API attendue
-```json
-{
-  "success": true,
-  "prediction": 1,
-  "probability_disease": 0.82,
-  "probability_no_disease": 0.18,
-  "risk_level": "Élevé",
-  "description": "Risque cardiovasculaire élevé nécessitant une consultation médicale",
-  "recommendations": [
-    "Consulter un cardiologue rapidement",
-    "Surveiller régulièrement votre tension artérielle",
-    "Adopter une alimentation pauvre en sel"
-  ]
-}
-```
+Dans un second terminal, depuis ce dépôt :
 
----
-
-## 📱 Variables collectées
-
-| Variable | Type | Description |
-|----------|------|-------------|
-| **age** | numérique | Âge du patient (années) |
-| **sex** | catégorique | Sexe biologique (0: femme, 1: homme) |
-| **cp** | catégorique | Type de douleur thoracique (0-3) |
-| **trestbps** | numérique | Pression artérielle au repos (mmHg) |
-| **chol** | numérique | Cholestérol sérique (mg/dL) |
-| **fbs** | binaire | Glycémie à jeun > 120 mg/dL (0: non, 1: oui) |
-| **restecg** | catégorique | Résultats ECG au repos (0-2) |
-| **thalach** | numérique | Fréquence cardiaque maximale (bpm) |
-| **exang** | binaire | Angine induite par l'effort (0: non, 1: oui) |
-| **oldpeak** | numérique | Dépression du segment ST (points) |
-| **slope** | catégorique | Pente du segment ST à l'effort (0-2) |
-| **ca** | catégorique | Nombre de vaisseaux colorés (0-3) |
-| **thal** | catégorique | Résultat test thalassémie (1-3) |
-
----
-
-## 🎨 Design et UX
-
-### Palette de couleurs
-```dart
-Color(0xFF2E7D32)  // Vert principal
-Color(0xFF4CAF50)  // Vert secondaire  
-Color(0xFF1B5E20)  // Vert foncé
-Color(0xFFE8F5E9)  // Vert clair (background)
-```
-
-### Niveaux de risque
-| Niveau | Couleur | Description |
-|--------|---------|-------------|
-| **Aucun** | Vert | Risque très faible |
-| **Faible** | Vert clair | Surveillance recommandée |
-| **Modéré** | Orange | Consultation médicale conseillée |
-| **Élevé** | Orange foncé | Consultation médicale nécessaire |
-| **Très élevé** | Rouge | Consultation médicale urgente |
-
----
-
-## 📦 Dépendances principales
-
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  http: ^1.5.0                    # Requêtes API
-  provider: ^6.1.2                # Gestion d'état
-  pdf: ^3.10.9                    # Génération PDF
-  printing: ^5.11.2               # Impression PDF
-  path_provider: ^2.1.3           # Accès fichiers
-  open_file: ^3.2.1               # Ouverture fichiers
-  flutter_vector_icons: ^2.0.0    # Icônes supplémentaires
-```
-
----
-
-
-## 🚀 Build pour production
-
-### Android APK
 ```bash
-flutter build apk --release
+flutter run -d chrome --web-port 8080
 ```
 
-### Android App Bundle
+### Configuration de l'URL de l'API
+
+L'URL n'est jamais écrite dans le code. Pour un build de production, copier l'exemple puis indiquer l'adresse HTTPS réelle :
+
 ```bash
-flutter build appbundle --release
+cp dart_defines.example.json dart_defines.json   # fichier non commité
 ```
 
-### iOS (macOS uniquement)
+Un build de production refuse toute adresse qui n'est pas en HTTPS et affiche alors un message d'erreur.
+
+### Génération de l'APK
+
 ```bash
-flutter build ios --release
+flutter build apk --release --dart-define-from-file=dart_defines.json
 ```
 
----
+Pour une diffusion, copier `android/key.properties.example` vers `android/key.properties` et renseigner la clé de signature. Sans ce fichier, l'APK est signé avec la clé de debug et ne convient qu'à une démonstration.
 
+### Vérifications
 
-### Problème : "PDF not generated"
-- Sur web : La génération PDF n'est pas supportée
-- Sur mobile : Vérifier les permissions de stockage
-
-### Problème : "Dependencies issues"
 ```bash
-flutter clean
-flutter pub get
+flutter analyze
+flutter test
 ```
 
----
+## 8. Structure du projet
 
-## 🔐 Sécurité et confidentialité
+```text
+lib/
+  main.dart          point d'entrée
+  app.dart           configuration de l'application, thème et langues
+  config/            URL de l'API par environnement
+  controllers/       état du formulaire, langue, accès aux services
+  l10n/              textes français et anglais
+  models/            patient et résultat
+  screens/           accueil, à propos, formulaire, résultat
+  services/          appel à l'API et erreurs réseau
+  theme/             couleurs, espacements, thème Material 3
+  utils/             champs cliniques, validation, libellés
+  widgets/           composants réutilisables
+test/                validation, conversion, réponses de l'API, parcours complets
+```
 
-- **Aucune donnée patient** n'est stockée sur le téléphone
-- **Aucune donnée** n'est persistée côté serveur
-- Les données sont utilisées **uniquement** pour la prédiction en temps réel
-- **Communication locale** entre mobile et backend (pas de cloud)
-- L'application est une **aide à la décision médicale** et ne remplace pas un avis médical professionnel
+## 9. Sécurité et confidentialité des données
 
----
+| Mesure | Mise en œuvre |
+|---|---|
+| Aucun secret dans l'application | URL fournie à la compilation, fichiers locaux exclus du dépôt |
+| HTTPS en production | Trafic en clair refusé sur Android et iOS, sauf adresses locales de développement |
+| Données de santé | Conservées en mémoire le temps de l'écran ; rien n'est écrit sur le téléphone |
+| Journaux | Aucune donnée patient journalisée ; les erreurs ne recopient pas les réponses du serveur |
+| Permissions | Android : Internet uniquement |
+| Historique Git | Analysé avec `gitleaks` : aucun secret détecté |
 
-## 👨‍💻 Auteur
+Les contrôles du formulaire servent le confort du médecin. **La vraie validation doit rester côté serveur**, car une application mobile peut être contournée. Aucune information d'identité (nom, numéro de dossier) n'est demandée.
 
-**Abdoul-wakilou Tiga**  
-Étudiant en Master 2 Génie Logiciel 
-Université Université d'Abomey-Calavi
-Année académique 2024-2025
+La validation stricte et la limitation du débit sont assurées par l'API. Son déploiement public reste à réaliser derrière un proxy HTTPS.
 
-### Contact
-- 📧 Email : [abdoulwakiloutiga@gmail.com](abdoulwakiloutiga@gmail.com)
-- 🔗 LinkedIn : [Abdoul-wakilou-Tiga](https://linkedin.com/in/abdoul-wakilou-tiga)
-- 🐙 GitHub : [Abdoul-wakilou-Tiga](https://github.com/Abdoul-wakilou-Tiga)
+## 10. Limites et perspectives
 
----
+### Performances du modèle : une correction à connaître
 
-## 📄 Licence
+Le mémoire rapporte des performances **surestimées**, comme l'a établi une revue postérieure à la soutenance. La variable `ca`, absente pour 62,9 % des patients, était imputée par la médiane *de la classe à prédire* avant le découpage : pour ces patients, elle révélait le diagnostic. Les valeurs `chol = 0`, qui codent une mesure absente, renseignaient aussi le modèle sur le centre d'origine.
 
-Ce projet est distribué sous licence **MIT**.
+Le dépôt du modèle corrige ces défauts. Évaluation sur les mêmes 251 patients de test :
 
----
+| Modèle | Accuracy | AUC | Sensibilité | Spécificité |
+|---|---:|---:|---:|---:|
+| Mémoire, Random Forest (avec fuite) | 92,83 % | 0,980 | 94,96 % | 90,18 % |
+| Corrigé, Random Forest | 78,49 % | 0,869 | 84,17 % | 71,43 % |
+| **Corrigé, SVM (modèle servi par l'API)** | **76,49 %** | **0,844** | **82,01 %** | **69,64 %** |
 
-*Dernière mise à jour : Juillet 2026*  
-*Version Flutter : 3.0+*  
-*Backend requis : Flask API (cardio_predict_model)*
+**Seules les lignes corrigées sont à retenir.** Méthode, intervalles de confiance et validation par centre sont détaillés dans le [README du modèle](https://github.com/Abdoul-wakilou/cardio_predict_model#écart-avec-le-mémoire).
+
+### Autres limites
+
+- **Ce qui est prédit :** la présence d'une sténose coronarienne d'au moins 50 % à l'examen, et non la survenue future d'un événement cardiovasculaire.
+- **Population :** données UCI de quatre centres (États-Unis, Hongrie, Suisse), anciennes, à 78 % masculines et sans patient béninois. Le modèle n'a pas été validé localement.
+- **Examens requis :** la fluoroscopie (`ca`), la scintigraphie au thallium (`thal`) et l'épreuve d'effort ne sont pas toujours disponibles.
+- **Niveaux et recommandations :** ils viennent de règles écrites dans l'API, en français uniquement pour les recommandations, et n'ont pas été validés par des cardiologues.
+- **Transfert :** les performances chutent fortement entre centres (AUC de 0,655 à Long Beach VA quand ce centre est exclu de l'entraînement).
+
+### Perspectives
+
+- Valider le modèle sur des données béninoises
+- Proposer un mode sans examens invasifs
+- Traduire les recommandations côté API
+- Évaluer l'outil avec des professionnels de santé
+
+## 11. Avertissement médical
+
+CardioPredict est un outil d'aide à la décision issu d'un travail universitaire. **Il ne pose pas de diagnostic et ne remplace pas le jugement d'un professionnel de santé.** Il n'a fait l'objet d'aucune certification comme dispositif médical ni d'aucune validation clinique. Ses résultats sont des estimations statistiques, à interpréter avec l'ensemble du dossier du patient.
+
+## 12. Auteur
+
+**Abdoul-Wakilou TIGA**
+
+- E-mail : [abdoulwakiloutiga@gmail.com](mailto:abdoulwakiloutiga@gmail.com)
+- GitHub : [github.com/Abdoul-wakilou](https://github.com/Abdoul-wakilou)
+- LinkedIn : [linkedin.com/in/abdoul-wakilou-tiga](https://linkedin.com/in/abdoul-wakilou-tiga)
+- Kaggle : [kaggle.com/abdoulwakiloutiga](https://kaggle.com/abdoulwakiloutiga)
+- Site : [abdevfreelance.com](https://abdevfreelance.com)
+
+**Mémoire :** *Développement d'un modèle d'intelligence artificielle pour la prédiction du risque cardiovasculaire et son intégration dans une application mobile*, Master en Génie Logiciel, IFRI, Université d'Abomey-Calavi. Soutenu le 29 juillet 2026, mention Bien. Encadrant : Dr (MA) Mêton Mêton Atindehou.
+
+Le mémoire est disponible sur demande auprès de l'auteur.
+
+**Modèle et API :** [`cardio_predict_model`](https://github.com/Abdoul-wakilou/cardio_predict_model)
+
+## 13. Licence
+
+Distribué sous licence MIT. Voir le fichier [LICENSE](LICENSE).
